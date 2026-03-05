@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #006DB0;
+  --color-primary-light: #1A8FD8;
+  --color-primary-dark: #005A91;
+  --color-primary-deep: #004470;
+  --color-accent: #00BFFF;
+  --color-navy: #071426;
+  --color-navy-light: #0E2240;
+  --color-charcoal: #121A2E;
+  --color-background: #030B18;
+  --color-foreground: #F0F6FC;
+  --color-muted: #8BA4C4;
+  --color-border: rgba(0, 109, 176, 0.15);
+  --color-surface: #0A1A30;
+  --color-surface-light: #0E2240;
+  --font-heading: var(--font-playfair);
+  --font-body: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(0, 109, 176, 0.3);
+  color: #F0F6FC;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #071426;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #006DB0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1A8FD8;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #006DB0 #071426;
+}
+
+:focus-visible {
+  outline: 2px solid #006DB0;
+  outline-offset: 2px;
+}
+
+.text-brand-gradient {
+  background: linear-gradient(135deg, #1A8FD8 0%, #006DB0 50%, #00BFFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-brand-gradient {
+  border-image: linear-gradient(135deg, #1A8FD8 0%, #006DB0 50%, #00BFFF 100%) 1;
+}
+
+.bg-brand-gradient {
+  background: linear-gradient(135deg, #1A8FD8 0%, #006DB0 50%, #005A91 100%);
+}
+
+.brand-glow {
+  box-shadow: 0 0 20px rgba(0, 109, 176, 0.2), 0 0 40px rgba(0, 109, 176, 0.08);
+}
+
+a,
+button {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scroll-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(12px);
+    opacity: 0.3;
+  }
+}
+
+.animate-scroll-bounce {
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+@keyframes accordion-down {
+  0% { height: 0; opacity: 0; }
+  100% { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+
+@keyframes accordion-up {
+  0% { height: var(--radix-accordion-content-height); opacity: 1; }
+  100% { height: 0; opacity: 0; }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 300ms ease-out;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 300ms ease-out;
+}
