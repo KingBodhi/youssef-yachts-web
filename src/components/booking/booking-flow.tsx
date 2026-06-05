@@ -125,6 +125,9 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [signingLink, setSigningLink] = useState("");
 
   const {
     register,
@@ -207,7 +210,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
     setStep((s) => Math.max(s - 1, 1));
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const data = watchAll;
     const basePrice = getBasePrice(yacht, data.charterType);
     const addOnsTotal = selectedAddOns.reduce((sum, a) => sum + a.price, 0);
@@ -218,43 +221,54 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
     const deposit = Math.round(total * 0.5);
     const times = getTimeSlotTimes(data.timeSlot);
 
-    createBooking({
-      yachtId: yacht.id,
-      customerInfo: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        specialRequests: data.specialRequests || undefined,
-      },
-      schedule: {
-        date: data.date,
-        startTime: times.start,
-        endTime: times.end,
-        type: data.charterType,
-      },
-      guests: data.guests,
-      addOns: data.addOns,
-      pricing: {
-        basePrice,
-        addOnsTotal,
-        serviceFee,
-        tax,
-        total,
-        deposit,
-        balance: total - deposit,
-      },
-      payment: {
-        method: "card",
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      const result = await createBooking({
+        yachtId: yacht.id,
+        customerInfo: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          specialRequests: data.specialRequests || undefined,
+        },
+        schedule: {
+          date: data.date,
+          startTime: times.start,
+          endTime: times.end,
+          type: data.charterType,
+        },
+        guests: data.guests,
+        addOns: data.addOns,
+        pricing: {
+          basePrice,
+          addOnsTotal,
+          serviceFee,
+          tax,
+          total,
+          deposit,
+          balance: total - deposit,
+        },
+        payment: {
+          method: "card",
+          status: "deposit_paid",
+          paidAmount: deposit,
+          remainingAmount: total - deposit,
+        },
         status: "deposit_paid",
-        paidAmount: deposit,
-        remainingAmount: total - deposit,
-      },
-      status: "deposit_paid",
-      notes: data.specialRequests || undefined,
-    });
+        notes: data.specialRequests || undefined,
+      });
 
-    setIsSubmitted(true);
+      setSigningLink(result.signingLink);
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError(
+        "We couldn't complete your booking. Please try again or contact us."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }, [watchAll, yacht, selectedAddOns]);
 
   // Toggle add-on
@@ -287,7 +301,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
   }, [watchAll.guests, setValue]);
 
   if (isSubmitted) {
-    return <SuccessState yacht={yacht} data={watchAll} />;
+    return <SuccessState yacht={yacht} data={watchAll} signingLink={signingLink} />;
   }
 
   return (
@@ -409,11 +423,21 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
               Continue <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button size="lg" onClick={handleSubmit} className="gap-2">
-              <CreditCard className="h-4 w-4" /> Confirm &amp; Pay Deposit
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="gap-2"
+            >
+              <CreditCard className="h-4 w-4" />{" "}
+              {submitting ? "Processing..." : "Confirm & Pay Deposit"}
             </Button>
           )}
         </div>
+
+        {submitError && (
+          <p className="mt-3 text-right text-sm text-red-400">{submitError}</p>
+        )}
       </div>
 
       {/* Right -- Sticky Price Summary */}
@@ -972,10 +996,24 @@ function StepReview({
 function SuccessState({
   yacht,
   data,
+  signingLink,
 }: {
   yacht: Yacht;
   data: BookingFormData;
+  signingLink?: string;
 }) {
+  const waiverHref = signingLink || "/waiver";
+  const [copied, setCopied] = useState(false);
+  const copyLink = async () => {
+    if (!signingLink) return;
+    try {
+      await navigator.clipboard.writeText(signingLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -991,10 +1029,36 @@ function SuccessState({
       </h2>
       <p className="mx-auto mt-4 max-w-md text-muted">
         Thank you, {data.firstName}! Your reservation for the{" "}
-        <span className="text-primary-light">{yacht.name}</span> has been received. A
-        confirmation email has been sent to{" "}
-        <span className="text-foreground">{data.email}</span>.
+        <span className="text-primary-light">{yacht.name}</span> has been received.
+        We&apos;ll reach out at{" "}
+        <span className="text-foreground">{data.email}</span> to confirm the
+        details.
       </p>
+
+      {signingLink && (
+        <div className="mx-auto mt-8 max-w-md rounded-lg border border-primary/30 bg-primary/5 p-5 text-left">
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Guest Waiver Link
+          </h3>
+          <p className="mt-2 text-sm text-muted">
+            Every guest must sign the liability waiver before boarding. Share
+            this link with your whole party.
+          </p>
+          <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-navy-light/60 p-2">
+            <input
+              readOnly
+              value={signingLink}
+              className="flex-1 truncate bg-transparent text-xs text-muted outline-none"
+            />
+            <button
+              onClick={copyLink}
+              className="shrink-0 rounded bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </div>
+      )}
       <div className="mx-auto mt-8 max-w-sm rounded-lg border border-border bg-navy-light/50 p-6 text-left">
         <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary">
           Next Steps
@@ -1004,17 +1068,20 @@ function SuccessState({
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
               1
             </span>
-            Check your email for the confirmation and receipt.
+            Our team will confirm your charter and arrange the balance.
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
               2
             </span>
-            Complete the{" "}
-            <a href="/waiver" className="text-primary underline underline-offset-2">
+            Have every guest complete the{" "}
+            <a
+              href={waiverHref}
+              className="text-primary underline underline-offset-2"
+            >
               digital waiver
             </a>{" "}
-            for all guests before your charter date.
+            before your charter date.
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -1029,7 +1096,7 @@ function SuccessState({
           <a href="/">Return Home</a>
         </Button>
         <Button asChild variant="outline" size="lg">
-          <a href="/waiver">Complete Waiver</a>
+          <a href={waiverHref}>Complete Waiver</a>
         </Button>
       </div>
     </motion.div>

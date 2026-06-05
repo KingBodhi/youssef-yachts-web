@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ADMIN_CREDENTIALS } from "@/lib/constants";
 import { Anchor, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -13,23 +12,29 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      if (
-        email === ADMIN_CREDENTIALS.email &&
-        password === ADMIN_CREDENTIALS.password
-      ) {
-        localStorage.setItem("yousef_admin_auth", "true");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
         router.replace("/admin");
+        router.refresh();
       } else {
-        setError("Invalid email or password.");
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? "Invalid email or password.");
         setLoading(false);
       }
-    }, 600);
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (

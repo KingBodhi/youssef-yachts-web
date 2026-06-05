@@ -55,8 +55,8 @@ export default function AdminCalendarPage() {
   const [selectedYacht, setSelectedYacht] = useState("all");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const refresh = useCallback(() => {
-    setBookings(getAllBookings());
+  const refresh = useCallback(async () => {
+    setBookings(await getAllBookings());
   }, []);
 
   useEffect(() => {

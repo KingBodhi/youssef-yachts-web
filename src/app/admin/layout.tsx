@@ -29,16 +29,33 @@ export default function AdminLayout({
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const auth = localStorage.getItem("yousef_admin_auth");
-    if (auth !== "true" && pathname !== "/admin/login") {
-      router.replace("/admin/login");
-    } else {
-      setAuthenticated(auth === "true" || pathname === "/admin/login");
+    if (pathname === "/admin/login") {
+      setAuthenticated(true);
+      return;
     }
+    let active = true;
+    fetch("/api/admin/me")
+      .then((res) => {
+        if (!active) return;
+        if (res.ok) {
+          setAuthenticated(true);
+        } else {
+          setAuthenticated(false);
+          router.replace("/admin/login");
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setAuthenticated(false);
+        router.replace("/admin/login");
+      });
+    return () => {
+      active = false;
+    };
   }, [pathname, router]);
 
-  function handleLogout() {
-    localStorage.removeItem("yousef_admin_auth");
+  async function handleLogout() {
+    await fetch("/api/admin/logout", { method: "POST" });
     router.replace("/admin/login");
   }
 

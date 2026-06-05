@@ -35,8 +35,8 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [mounted, setMounted] = useState(false);
 
-  const refresh = useCallback(() => {
-    setBookings(getAllBookings());
+  const refresh = useCallback(async () => {
+    setBookings(await getAllBookings());
   }, []);
 
   useEffect(() => {
@@ -57,9 +57,9 @@ export default function AdminDashboard() {
 
   const recent = bookings.slice(0, 10);
 
-  function handleUpdateStatus(id: string, status: BookingStatus) {
-    updateBookingStatus(id, status);
-    refresh();
+  async function handleUpdateStatus(id: string, status: BookingStatus) {
+    await updateBookingStatus(id, status);
+    await refresh();
   }
 
   const stats = [

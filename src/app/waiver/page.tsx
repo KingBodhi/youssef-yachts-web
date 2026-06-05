@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v4";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -17,9 +17,23 @@ import {
   CheckCircle,
   FileText,
   Anchor,
+  AlertCircle,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BRAND } from "@/lib/constants";
+import { waiverSections } from "@/lib/waiver-content";
+import { waiverFormSchema, type WaiverFormData } from "@/lib/schemas";
+
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  "assumption-of-risk": AlertTriangle,
+  "release-of-liability": Shield,
+  medical: Heart,
+  alcohol: Wine,
+  "property-damage": DollarSign,
+  emergency: Siren,
+  "photo-video": Camera,
+  "governing-law": Scale,
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -34,102 +48,25 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const waiverSections = [
-  {
-    icon: AlertTriangle,
-    title: "1. Assumption of Risk",
-    content:
-      'I acknowledge that participating in yacht charter activities involves inherent risks, including but not limited to: drowning, slipping, falling, sunburn, seasickness, marine life encounters, equipment malfunction, and adverse weather conditions. I voluntarily assume all risks, known and unknown, associated with participating in this charter, including travel to and from the vessel. I understand that conditions on the water can change rapidly and agree to follow all safety instructions given by the captain and crew at all times.',
-  },
-  {
-    icon: Shield,
-    title: "2. Release of Liability",
-    content:
-      `I, on behalf of myself, my heirs, executors, administrators, and assigns, hereby release, waive, and forever discharge ${BRAND.name}, its owners, operators, employees, agents, captains, and crew members from any and all liability, claims, demands, actions, and causes of action whatsoever arising out of or related to any loss, damage, or injury, including death, that may be sustained by me or any property belonging to me, whether caused by the negligence of the releasees or otherwise, while participating in charter activities.`,
-  },
-  {
-    icon: Heart,
-    title: "3. Medical Acknowledgment",
-    content:
-      "I certify that I am in good physical health and have no medical conditions that would prevent my safe participation in yacht charter activities. I understand that it is my responsibility to inform the captain of any medical conditions, disabilities, allergies, or medications that may affect my participation or require emergency attention. I authorize emergency medical treatment at my own expense if necessary. I understand that medical facilities may not be immediately accessible while on the water.",
-  },
-  {
-    icon: Wine,
-    title: "4. Alcohol & Substance Policy",
-    content:
-      `I understand that the consumption of alcoholic beverages on the vessel is permitted for guests 21 years of age and older. I acknowledge that excessive alcohol consumption increases the risk of injury and may impair judgment. I agree not to consume illegal substances aboard the vessel. I understand that the captain reserves the right to refuse service, limit alcohol consumption, or terminate the charter if any guest's behavior, due to intoxication or otherwise, poses a safety risk to themselves, other guests, or the crew. No refund will be issued in such cases.`,
-  },
-  {
-    icon: DollarSign,
-    title: "5. Property Damage",
-    content:
-      `I agree to be held financially responsible for any damage to the vessel, its equipment, furnishings, or any property of ${BRAND.name} caused by my willful misconduct, negligence, or failure to follow the captain's instructions. This includes but is not limited to: damage to upholstery, electronics, water toys, hull, and engine components. I agree to report any damage immediately to the captain. A damage assessment will be conducted at the conclusion of the charter, and repair or replacement costs will be billed accordingly.`,
-  },
-  {
-    icon: Siren,
-    title: "6. Emergency Medical Authorization",
-    content:
-      "In the event of a medical emergency, I authorize the captain and crew to administer basic first aid and to contact emergency medical services on my behalf. I understand and agree that any medical expenses incurred as a result of an emergency during the charter are my sole financial responsibility. I consent to being transported to the nearest medical facility if deemed necessary by the captain or emergency responders. I release the captain and crew from any liability related to emergency medical decisions made in good faith.",
-  },
-  {
-    icon: Camera,
-    title: "7. Photo & Video Release",
-    content:
-      `I grant ${BRAND.name}, its employees, and its affiliates the irrevocable right to use any photographs, video recordings, or other media taken during my charter for promotional, marketing, advertising, and editorial purposes across all media platforms, including but not limited to: website, social media, print, and digital advertising. I waive any right to compensation, inspection, or approval of the finished materials. I understand I may request to opt out of this clause by notifying the captain in writing prior to departure.`,
-  },
-  {
-    icon: Scale,
-    title: "8. Governing Law & Jurisdiction",
-    content:
-      "This waiver and release shall be governed by and construed in accordance with the laws of the State of Florida and applicable federal maritime law. Any disputes arising from this agreement or the charter activities shall be resolved exclusively in the state or federal courts located in Miami-Dade County, Florida. If any provision of this waiver is found to be unenforceable, the remaining provisions shall remain in full force and effect. This waiver constitutes the entire agreement between the parties regarding the subject matter herein.",
-  },
-];
-
-const waiverSchema = z.object({
-  fullName: z.string().min(2, "Full name is required").max(100),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
-  email: z.email("Please enter a valid email address"),
-  phone: z
-    .string()
-    .min(1, "Phone number is required")
-    .regex(/^[\d\s\-\+\(\)]{7,20}$/, "Please enter a valid phone number"),
-  emergencyContactName: z
-    .string()
-    .min(2, "Emergency contact name is required")
-    .max(100),
-  emergencyContactPhone: z
-    .string()
-    .min(1, "Emergency contact phone is required")
-    .regex(/^[\d\s\-\+\(\)]{7,20}$/, "Please enter a valid phone number"),
-  emergencyContactRelation: z
-    .string()
-    .min(1, "Relationship is required")
-    .max(50),
-  agreedToTerms: z.literal(true, {
-    error: "You must agree to the terms and conditions",
-  }),
-  typedSignature: z
-    .string()
-    .min(2, "Please type your full legal name as a signature")
-    .max(100),
-});
-
-type WaiverFormData = z.infer<typeof waiverSchema>;
-
 const inputClasses =
   "w-full rounded-sm border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
 const labelClasses = "mb-1.5 block text-sm font-medium text-foreground/80";
 const errorClasses = "mt-1 text-xs text-red-400";
 
-export default function WaiverPage() {
+function WaiverForm() {
+  const searchParams = useSearchParams();
+  const bookingId = searchParams.get("booking") ?? undefined;
+  const token = searchParams.get("token") ?? undefined;
+
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<WaiverFormData>({
-    resolver: zodResolver(waiverSchema),
+    resolver: zodResolver(waiverFormSchema),
     defaultValues: {
       fullName: "",
       dateOfBirth: "",
@@ -144,10 +81,34 @@ export default function WaiverPage() {
   });
 
   const onSubmit = async (data: WaiverFormData) => {
-    console.log("Waiver submitted:", data);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/waivers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, bookingId, token }),
+      });
+
+      if (res.status === 403) {
+        setSubmitError(
+          "This signing link is invalid or has expired. Please request a new link from Youssef Yachts."
+        );
+        return;
+      }
+      if (!res.ok) {
+        setSubmitError(
+          "We couldn't submit your waiver. Please try again or contact us."
+        );
+        return;
+      }
+
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setSubmitError(
+        "Something went wrong. Please check your connection and try again."
+      );
+    }
   };
 
   if (isSubmitted) {
@@ -166,8 +127,9 @@ export default function WaiverPage() {
             Waiver Signed Successfully
           </h2>
           <p className="mt-4 text-muted">
-            Your digital waiver has been recorded. A confirmation copy has been
-            sent to the email address you provided.
+            Your waiver has been recorded and a signed PDF has been saved for our
+            records. Each additional guest must complete their own waiver before
+            boarding.
           </p>
 
           <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 p-6 text-left">
@@ -258,6 +220,14 @@ export default function WaiverPage() {
       {/* Waiver Form */}
       <section className="relative pb-24">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          {bookingId && (
+            <div className="mb-8 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary-light">
+              <Anchor className="h-4 w-4 shrink-0" />
+              You are signing for charter{" "}
+              <span className="font-semibold">{bookingId}</span>.
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             {/* Legal Sections */}
             <motion.div
@@ -267,26 +237,29 @@ export default function WaiverPage() {
               variants={stagger}
               className="space-y-6"
             >
-              {waiverSections.map((section, i) => (
-                <motion.div
-                  key={section.title}
-                  variants={fadeUp}
-                  custom={i}
-                  className="rounded-lg border border-border bg-surface p-6 sm:p-8"
-                >
-                  <div className="mb-4 flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <section.icon className="h-5 w-5" />
+              {waiverSections.map((section, i) => {
+                const Icon = SECTION_ICONS[section.id] ?? FileText;
+                return (
+                  <motion.div
+                    key={section.id}
+                    variants={fadeUp}
+                    custom={i}
+                    className="rounded-lg border border-border bg-surface p-6 sm:p-8"
+                  >
+                    <div className="mb-4 flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <h2 className="pt-1.5 font-heading text-lg font-semibold text-foreground">
+                        {section.title}
+                      </h2>
                     </div>
-                    <h2 className="pt-1.5 font-heading text-lg font-semibold text-foreground">
-                      {section.title}
-                    </h2>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted">
-                    {section.content}
-                  </p>
-                </motion.div>
-              ))}
+                    <p className="text-sm leading-relaxed text-muted">
+                      {section.content}
+                    </p>
+                  </motion.div>
+                );
+              })}
             </motion.div>
 
             {/* Personal Information */}
@@ -514,10 +487,7 @@ export default function WaiverPage() {
 
                   {/* Typed Signature */}
                   <div>
-                    <label
-                      htmlFor="typedSignature"
-                      className={labelClasses}
-                    >
+                    <label htmlFor="typedSignature" className={labelClasses}>
                       Typed Signature (Full Legal Name) *
                     </label>
                     <p className="mb-2 text-xs text-muted/70">
@@ -540,9 +510,7 @@ export default function WaiverPage() {
 
                   {/* Date display */}
                   <div className="flex items-center gap-2 text-sm text-muted">
-                    <span className="font-medium text-foreground/70">
-                      Date:
-                    </span>
+                    <span className="font-medium text-foreground/70">Date:</span>
                     {new Date().toLocaleDateString("en-US", {
                       weekday: "long",
                       year: "numeric",
@@ -550,6 +518,13 @@ export default function WaiverPage() {
                       day: "numeric",
                     })}
                   </div>
+
+                  {submitError && (
+                    <div className="flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      {submitError}
+                    </div>
+                  )}
 
                   {/* Submit */}
                   <div className="pt-2">
@@ -597,5 +572,19 @@ export default function WaiverPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function WaiverPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      }
+    >
+      <WaiverForm />
+    </Suspense>
   );
 }

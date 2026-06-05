@@ -30,8 +30,8 @@ export default function AdminFleetPage() {
   const [mounted, setMounted] = useState(false);
   const [toast, setToast] = useState(false);
 
-  const refresh = useCallback(() => {
-    setBookings(getAllBookings());
+  const refresh = useCallback(async () => {
+    setBookings(await getAllBookings());
   }, []);
 
   useEffect(() => {

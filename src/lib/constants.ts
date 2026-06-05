@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "Yousef Yachts",
+  name: "Youssef Yachts",
   tagline: "Miami's Elite Yacht Charter Experience",
   description:
     "Premier luxury yacht charters in Miami. Handpicked vessels, professional crew, world-class service on Biscayne Bay, Star Island, and beyond.",
@@ -33,8 +33,3 @@ export const ADD_ONS = [
   { id: "water-toys", name: "Water Toys Package", price: 500, icon: "anchor", description: "Paddleboards, snorkeling gear, floats, and more" },
   { id: "decorations", name: "Custom Decorations", price: 600, icon: "sparkles", description: "Balloons, flowers, banners — tailored to your event" },
 ] as const;
-
-export const ADMIN_CREDENTIALS = {
-  email: "admin@yousefyachts.com",
-  password: "yousef2024!",
-} as const;

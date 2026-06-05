@@ -18,7 +18,13 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
+  Copy,
+  Download,
+  FileCheck,
+  FileWarning,
+  Link2,
 } from "lucide-react";
+import type { WaiverRecord } from "@/lib/serializers";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-yellow-500/15 text-yellow-400",
@@ -55,9 +61,13 @@ export default function AdminBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [modalNotes, setModalNotes] = useState("");
   const [openActionsId, setOpenActionsId] = useState<string | null>(null);
+  const [waivers, setWaivers] = useState<WaiverRecord[]>([]);
+  const [signingLink, setSigningLink] = useState("");
+  const [waiversLoading, setWaiversLoading] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  const refresh = useCallback(() => {
-    setBookings(getAllBookings());
+  const refresh = useCallback(async () => {
+    setBookings(await getAllBookings());
   }, []);
 
   useEffect(() => {
@@ -76,6 +86,43 @@ export default function AdminBookingsPage() {
       }
     }
   }, [searchParams, bookings]);
+
+  // Load the guest waiver roster + signing link whenever a booking is opened.
+  useEffect(() => {
+    const id = selectedBooking?.id;
+    if (!id) {
+      setWaivers([]);
+      setSigningLink("");
+      return;
+    }
+    let active = true;
+    setWaiversLoading(true);
+    fetch(`/api/bookings/${encodeURIComponent(id)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        setWaivers(data.waivers ?? []);
+        setSigningLink(data.signingLink ?? "");
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setWaiversLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedBooking?.id]);
+
+  async function copySigningLink() {
+    if (!signingLink) return;
+    try {
+      await navigator.clipboard.writeText(signingLink);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
 
   const filtered = useMemo(() => {
     let result = bookings;
@@ -131,20 +178,31 @@ export default function AdminBookingsPage() {
     }
   }
 
-  function handleUpdateStatus(id: string, status: BookingStatus, notes?: string) {
-    updateBookingStatus(id, status, notes);
-    refresh();
+  async function handleUpdateStatus(
+    id: string,
+    status: BookingStatus,
+    notes?: string
+  ) {
+    await updateBookingStatus(id, status, notes);
+    await refresh();
     if (selectedBooking?.id === id) {
-      const updated = bookings.find((b) => b.id === id);
-      if (updated) setSelectedBooking({ ...updated, status, notes: notes ?? updated.notes });
+      setSelectedBooking({
+        ...selectedBooking,
+        status,
+        notes: notes ?? selectedBooking.notes,
+      });
     }
     setOpenActionsId(null);
   }
 
-  function handleSaveNotes() {
+  async function handleSaveNotes() {
     if (!selectedBooking) return;
-    updateBookingStatus(selectedBooking.id, selectedBooking.status, modalNotes);
-    refresh();
+    await updateBookingStatus(
+      selectedBooking.id,
+      selectedBooking.status,
+      modalNotes
+    );
+    await refresh();
   }
 
   function sortIndicator(key: SortKey) {
@@ -571,6 +629,83 @@ export default function AdminBookingsPage() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Guest Waivers */}
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                    Guest Waivers
+                  </h4>
+                  <span className="text-xs font-medium text-gray-400">
+                    {waivers.length} of {selectedBooking.guests} guest
+                    {selectedBooking.guests === 1 ? "" : "s"} signed
+                  </span>
+                </div>
+
+                {/* Shareable signing link */}
+                <div className="mb-3 flex items-center gap-2 rounded-lg bg-white/5 p-3">
+                  <Link2 className="h-4 w-4 shrink-0 text-[#006DB0]" />
+                  <input
+                    readOnly
+                    value={signingLink}
+                    placeholder="Generating link..."
+                    className="flex-1 truncate bg-transparent text-xs text-gray-300 outline-none"
+                  />
+                  <button
+                    onClick={copySigningLink}
+                    disabled={!signingLink}
+                    className="flex items-center gap-1 rounded-md bg-[#006DB0]/20 px-2.5 py-1 text-xs font-medium text-[#006DB0] transition hover:bg-[#006DB0]/30 disabled:opacity-50"
+                  >
+                    <Copy className="h-3 w-3" />
+                    {linkCopied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+
+                {waiversLoading ? (
+                  <p className="text-sm text-gray-500">Loading waivers...</p>
+                ) : waivers.length === 0 ? (
+                  <div className="flex items-center gap-2 rounded-lg bg-white/5 p-4 text-sm text-gray-400">
+                    <FileWarning className="h-4 w-4 text-yellow-400" />
+                    No guests have signed yet. Share the link above so each guest
+                    can sign before boarding.
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {waivers.map((w) => (
+                      <li
+                        key={w.id}
+                        className="flex items-center justify-between gap-3 rounded-lg bg-white/5 p-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <FileCheck className="h-4 w-4 shrink-0 text-green-400" />
+                            <span className="truncate text-sm font-medium text-white">
+                              {w.fullName}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 truncate text-xs text-gray-400">
+                            {w.email} ·{" "}
+                            {new Date(w.signedAt).toLocaleString()}
+                          </p>
+                        </div>
+                        {w.pdfUrl ? (
+                          <a
+                            href={`/api/waivers/${w.id}`}
+                            className="flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-white/20"
+                          >
+                            <Download className="h-3 w-3" />
+                            PDF
+                          </a>
+                        ) : (
+                          <span className="shrink-0 text-xs text-gray-500">
+                            No PDF
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {/* Notes */}

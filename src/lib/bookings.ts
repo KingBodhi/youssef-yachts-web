@@ -1,94 +1,112 @@
 import type { Booking, BookingStatus } from "@/lib/types";
-import { generateBookingId } from "@/lib/utils";
 
-const STORAGE_KEY = "yousef_yachts_bookings";
+// Client-side data access. Talks to the /api/bookings route handlers (server +
+// Postgres) instead of localStorage, so bookings made by guests reach the admin.
 
-function getBookings(): Booking[] {
-  if (typeof window === "undefined") return [];
-  const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? JSON.parse(raw) : [];
+async function fetchJson<T>(input: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, init);
+  if (!res.ok) {
+    const message = await res.text().catch(() => res.statusText);
+    throw new Error(`Request failed (${res.status}): ${message}`);
+  }
+  return res.json() as Promise<T>;
 }
 
-function saveBookings(bookings: Booking[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+export async function getAllBookings(): Promise<Booking[]> {
+  return fetchJson<Booking[]>("/api/bookings");
 }
 
-export function getAllBookings(): Booking[] {
-  return getBookings().sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+export async function getBookingById(id: string): Promise<Booking | undefined> {
+  const res = await fetch(`/api/bookings/${encodeURIComponent(id)}`);
+  if (!res.ok) return undefined;
+  const data = (await res.json()) as { booking: Booking };
+  return data.booking;
+}
+
+export async function getBookingsByYacht(yachtId: string): Promise<Booking[]> {
+  return fetchJson<Booking[]>(
+    `/api/bookings?yacht=${encodeURIComponent(yachtId)}`
   );
 }
 
-export function getBookingById(id: string): Booking | undefined {
-  return getBookings().find((b) => b.id === id);
+export async function getBookingsByDate(date: string): Promise<Booking[]> {
+  return fetchJson<Booking[]>(`/api/bookings?date=${encodeURIComponent(date)}`);
 }
 
-export function getBookingsByYacht(yachtId: string): Booking[] {
-  return getBookings().filter((b) => b.yachtId === yachtId);
+export async function getBookingsByStatus(
+  status: BookingStatus
+): Promise<Booking[]> {
+  return fetchJson<Booking[]>(
+    `/api/bookings?status=${encodeURIComponent(status)}`
+  );
 }
 
-export function getBookingsByDate(date: string): Booking[] {
-  return getBookings().filter((b) => b.schedule.date === date);
+export interface CreateBookingResult {
+  booking: Booking;
+  signingLink: string;
 }
 
-export function getBookingsByStatus(status: BookingStatus): Booking[] {
-  return getBookings().filter((b) => b.status === status);
+export async function createBooking(
+  data: Omit<Booking, "id" | "createdAt" | "updatedAt">
+): Promise<CreateBookingResult> {
+  return fetchJson<CreateBookingResult>("/api/bookings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
 }
 
-export function createBooking(data: Omit<Booking, "id" | "createdAt" | "updatedAt">): Booking {
-  const bookings = getBookings();
-  const now = new Date().toISOString();
-  const booking: Booking = {
-    ...data,
-    id: generateBookingId(),
-    createdAt: now,
-    updatedAt: now,
-  };
-  bookings.push(booking);
-  saveBookings(bookings);
-  return booking;
+export async function updateBookingStatus(
+  id: string,
+  status: BookingStatus,
+  notes?: string
+): Promise<Booking | null> {
+  const res = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, ...(notes !== undefined ? { notes } : {}) }),
+  });
+  if (!res.ok) return null;
+  return (await res.json()) as Booking;
 }
 
-export function updateBookingStatus(id: string, status: BookingStatus, notes?: string): Booking | null {
-  const bookings = getBookings();
-  const index = bookings.findIndex((b) => b.id === id);
-  if (index === -1) return null;
-  bookings[index].status = status;
-  bookings[index].updatedAt = new Date().toISOString();
-  if (notes) bookings[index].notes = notes;
-  saveBookings(bookings);
-  return bookings[index];
+export async function deleteBooking(id: string): Promise<boolean> {
+  const res = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  return res.ok;
 }
 
-export function deleteBooking(id: string): boolean {
-  const bookings = getBookings();
-  const filtered = bookings.filter((b) => b.id !== id);
-  if (filtered.length === bookings.length) return false;
-  saveBookings(filtered);
-  return true;
-}
+// --- Client-side availability helpers (kept for API parity) ---
 
-export function isDateAvailable(yachtId: string, date: string, type: string): boolean {
-  const bookings = getBookings().filter(
-    (b) =>
-      b.yachtId === yachtId &&
-      b.schedule.date === date &&
-      b.status !== "cancelled"
+export async function isDateAvailable(
+  yachtId: string,
+  date: string,
+  type: string
+): Promise<boolean> {
+  const bookings = (await getBookingsByYacht(yachtId)).filter(
+    (b) => b.schedule.date === date && b.status !== "cancelled"
   );
   if (type === "full-day" || type === "multi-day") {
     return bookings.length === 0;
   }
-  return bookings.filter((b) => b.schedule.type === "full-day" || b.schedule.type === "multi-day").length === 0 &&
-    bookings.length < 2;
+  return (
+    bookings.filter(
+      (b) => b.schedule.type === "full-day" || b.schedule.type === "multi-day"
+    ).length === 0 && bookings.length < 2
+  );
 }
 
-export function getMonthBookings(yachtId: string, year: number, month: number): Booking[] {
+export async function getMonthBookings(
+  yachtId: string,
+  year: number,
+  month: number
+): Promise<Booking[]> {
   const startDate = new Date(year, month, 1).toISOString().split("T")[0];
   const endDate = new Date(year, month + 1, 0).toISOString().split("T")[0];
-  return getBookings().filter(
+  const bookings = await getBookingsByYacht(yachtId);
+  return bookings.filter(
     (b) =>
-      b.yachtId === yachtId &&
       b.schedule.date >= startDate &&
       b.schedule.date <= endDate &&
       b.status !== "cancelled"

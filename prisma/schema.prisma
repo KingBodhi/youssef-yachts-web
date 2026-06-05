@@ -1,0 +1,147 @@
+// Youssef Yachts data layer — bookings, per-charter waivers, admin auth.
+// Flat columns intentionally re-assembled into the nested TS shapes in
+// src/lib/serializers.ts so the existing UI types in src/lib/types.ts stay untouched.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "nodejs"
+}
+
+// Prisma 7: connection URLs live in prisma.config.ts (CLI) and the driver
+// adapter in src/lib/prisma.ts (runtime) — not here.
+datasource db {
+  provider = "postgresql"
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  deposit_paid
+  fully_paid
+  completed
+  cancelled
+}
+
+// Enum labels can't contain hyphens; serializer maps half_day <-> "half-day".
+enum CharterType {
+  half_day
+  full_day
+  multi_day
+}
+
+enum PaymentMethod {
+  card
+  wire
+  crypto
+}
+
+enum PaymentStatus {
+  pending
+  deposit_paid
+  fully_paid
+  refunded
+}
+
+enum AdminRole {
+  admin
+  manager
+}
+
+enum WaiverStatus {
+  pending
+  signed
+}
+
+model Booking {
+  id      String @id // human-readable "YY-..." from generateBookingId()
+  yachtId String // free string, references static yacht data in src/lib/data/yachts.ts
+
+  // CustomerInfo (flattened)
+  firstName       String
+  lastName        String
+  email           String
+  phone           String
+  specialRequests String?
+
+  // BookingSchedule (flattened) — date kept as "yyyy-MM-dd" string for lexical compares in admin UI
+  scheduleDate String
+  startTime    String
+  endTime      String
+  charterType  CharterType
+  endDate      String?
+
+  guests Int
+  addOns String[]
+
+  // BookingPricing (flattened, integer cents-free dollars to match current UI)
+  basePrice   Int
+  addOnsTotal Int
+  serviceFee  Int
+  tax         Int
+  total       Int
+  deposit     Int
+  balance     Int
+
+  // PaymentInfo (flattened) — Stripe seam preserved
+  paymentMethod         PaymentMethod @default(card)
+  paymentStatus         PaymentStatus @default(pending)
+  stripePaymentIntentId String?
+  paidAmount            Int           @default(0)
+  remainingAmount       Int           @default(0)
+
+  status BookingStatus @default(pending)
+  notes  String?
+
+  // Per-booking signing token embedded in the guest waiver link
+  waiverToken String @unique @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  waivers Waiver[]
+
+  @@index([yachtId])
+  @@index([scheduleDate])
+  @@index([status])
+}
+
+model Waiver {
+  id        String   @id @default(cuid())
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  bookingId String? // nullable so standalone waivers survive and booking delete sets null
+
+  fullName    String
+  dateOfBirth String
+  email       String
+  phone       String
+
+  emergencyContactName     String
+  emergencyContactPhone    String
+  emergencyContactRelation String?
+
+  typedSignature String
+  agreedToTerms  Boolean @default(false)
+
+  status   WaiverStatus @default(signed)
+  pdfUrl   String? // Vercel Blob URL of the generated signed PDF
+  signedAt DateTime     @default(now())
+
+  // audit
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([email])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  role         AdminRole @default(admin)
+  passwordHash String
+  createdAt    DateTime  @default(now())
+}
