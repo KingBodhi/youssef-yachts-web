@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Ship,
   ClipboardList,
+  FileSignature,
   LogOut,
   Anchor,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import {
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Bookings", href: "/admin/bookings", icon: ClipboardList },
+  { label: "Waivers", href: "/admin/waivers", icon: FileSignature },
   { label: "Calendar", href: "/admin/calendar", icon: CalendarDays },
   { label: "Fleet", href: "/admin/fleet", icon: Ship },
 ];

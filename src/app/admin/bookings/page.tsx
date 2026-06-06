@@ -5,8 +5,9 @@ import { useSearchParams } from "next/navigation";
 import {
   getAllBookings,
   updateBookingStatus,
+  createBooking,
 } from "@/lib/bookings";
-import { getYachtById } from "@/lib/data/yachts";
+import { getYachtById, yachts } from "@/lib/data/yachts";
 import { formatCurrency } from "@/lib/utils";
 import type { Booking, BookingStatus } from "@/lib/types";
 import {
@@ -24,6 +25,7 @@ import {
   FileWarning,
   Link2,
   IdCard,
+  Plus,
 } from "lucide-react";
 import type { WaiverRecord } from "@/lib/serializers";
 import QRCode from "qrcode";
@@ -68,6 +70,90 @@ export default function AdminBookingsPage() {
   const [waiversLoading, setWaiversLoading] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    yachtId: yachts[0]?.id ?? "",
+    charterType: "half-day" as "half-day" | "full-day" | "multi-day",
+    date: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    guests: 2,
+    notes: "",
+  });
+
+  async function handleCreateBooking(e: React.FormEvent) {
+    e.preventDefault();
+    const f = createForm;
+    const yacht = getYachtById(f.yachtId);
+    if (!yacht || !f.date || !f.firstName || !f.lastName) return;
+    const base =
+      f.charterType === "half-day"
+        ? yacht.pricing.halfDay
+        : f.charterType === "full-day"
+          ? yacht.pricing.fullDay
+          : yacht.pricing.multiDayPerDay ?? yacht.pricing.fullDay;
+    const serviceFee = Math.round(base * 0.1);
+    const tax = Math.round(base * 0.07);
+    const total = base + serviceFee + tax;
+    const deposit = Math.round(total * 0.5);
+    const times =
+      f.charterType === "half-day"
+        ? { start: "08:00", end: "12:00" }
+        : { start: "09:00", end: "17:00" };
+    setCreating(true);
+    try {
+      await createBooking({
+        yachtId: f.yachtId,
+        customerInfo: {
+          firstName: f.firstName,
+          lastName: f.lastName,
+          email: f.email,
+          phone: f.phone,
+        },
+        schedule: {
+          date: f.date,
+          startTime: times.start,
+          endTime: times.end,
+          type: f.charterType,
+        },
+        guests: Number(f.guests) || 1,
+        addOns: [],
+        pricing: {
+          basePrice: base,
+          addOnsTotal: 0,
+          serviceFee,
+          tax,
+          total,
+          deposit,
+          balance: total - deposit,
+        },
+        payment: {
+          method: "card",
+          status: "pending",
+          paidAmount: 0,
+          remainingAmount: total,
+        },
+        status: "confirmed",
+        notes: f.notes || undefined,
+      });
+      setShowCreate(false);
+      setCreateForm((p) => ({
+        ...p,
+        date: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        notes: "",
+      }));
+      await refresh();
+    } finally {
+      setCreating(false);
+    }
+  }
 
   const refresh = useCallback(async () => {
     setBookings(await getAllBookings());
@@ -223,8 +309,14 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Filter Tabs */}
+      {/* Filter Tabs + New Booking */}
       <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setShowCreate(true)}
+          className="mr-2 flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#0A0A0B] transition hover:bg-[#C4C4CB]"
+        >
+          <Plus className="h-4 w-4" /> New Booking
+        </button>
         {FILTER_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -862,6 +954,166 @@ export default function AdminBookingsPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Create Booking Modal */}
+      {showCreate && (
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setShowCreate(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleCreateBooking}
+            className="w-full max-w-lg rounded-xl border border-white/10 bg-[#161618] p-6"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">New Booking</h3>
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs text-gray-400">Yacht</label>
+                <select
+                  value={createForm.yachtId}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, yachtId: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                >
+                  {yachts.map((y) => (
+                    <option key={y.id} value={y.id} className="bg-[#161618]">
+                      {y.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">
+                  Charter Type
+                </label>
+                <select
+                  value={createForm.charterType}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      charterType: e.target.value as typeof p.charterType,
+                    }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                >
+                  <option value="half-day" className="bg-[#161618]">
+                    Half Day
+                  </option>
+                  <option value="full-day" className="bg-[#161618]">
+                    Full Day
+                  </option>
+                  <option value="multi-day" className="bg-[#161618]">
+                    Multi-Day
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">Date</label>
+                <input
+                  type="date"
+                  required
+                  value={createForm.date}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, date: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">
+                  First Name
+                </label>
+                <input
+                  required
+                  value={createForm.firstName}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, firstName: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">
+                  Last Name
+                </label>
+                <input
+                  required
+                  value={createForm.lastName}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, lastName: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">Email</label>
+                <input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, email: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">Phone</label>
+                <input
+                  value={createForm.phone}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, phone: e.target.value }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-gray-400">Guests</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={createForm.guests}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      guests: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs text-gray-400">Notes</label>
+                <input
+                  value={createForm.notes}
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, notes: e.target.value }))
+                  }
+                  placeholder="Optional"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#E9E9EC]"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={creating}
+              className="mt-5 w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#0A0A0B] transition hover:bg-[#C4C4CB] disabled:opacity-60"
+            >
+              {creating ? "Creating…" : "Create Booking"}
+            </button>
+          </form>
         </div>
       )}
     </div>
