@@ -73,34 +73,70 @@ export const bookingUpdateSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
-// Client-side waiver form fields (no booking linkage — that comes from the URL).
-export const waiverFormSchema = z.object({
-  fullName: z.string().min(2, "Full name is required").max(100),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
-  email: z.email("Please enter a valid email address"),
-  phone,
-  emergencyContactName: z
-    .string()
-    .min(2, "Emergency contact name is required")
-    .max(100),
-  emergencyContactPhone: phone,
-  emergencyContactRelation: z.string().min(1, "Relationship is required").max(50),
-  agreedToTerms: z.literal(true, {
-    error: "You must agree to the terms and conditions",
-  }),
-  typedSignature: z
-    .string()
-    .min(2, "Please type your full legal name as a signature")
-    .max(100),
-});
+// --- Waivers ---
+// Signature + ID images travel as multipart files; these schemas validate the
+// JSON `payload` field. bookingId/token come from the per-booking link.
 
-export type WaiverFormData = z.infer<typeof waiverFormSchema>;
-
-// Server-side waiver submission = the form fields plus the per-booking link params.
-export const waiverSubmitSchema = waiverFormSchema.extend({
+const linkParams = {
   bookingId: z.string().optional(),
   token: z.string().optional(),
+};
+
+// Guest waiver (G-NOMADS LLC) — minimal: name + DOB.
+export const guestWaiverSchema = z.object({
+  type: z.literal("guest"),
+  fullName: z.string().min(2, "Full name is required").max(120),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  ...linkParams,
 });
+
+export type GuestWaiverInput = z.infer<typeof guestWaiverSchema>;
+
+// Booker waiver (DJ YOUSSEF LLC) — full details + per-section initials + minor block.
+export const bookerWaiverSchema = z
+  .object({
+    type: z.literal("booker"),
+    fullName: z.string().min(2, "Full name is required").max(120),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
+    address: z.string().min(3, "Address is required").max(300),
+    email: z.email("Please enter a valid email address"),
+    // sectionId -> typed initials
+    initials: z.record(z.string(), z.string().min(1).max(8)),
+    isMinor: z.boolean().default(false),
+    minorName: z.string().max(120).optional(),
+    minorDateOfBirth: z.string().max(40).optional(),
+    guardianName: z.string().max(120).optional(),
+    ...linkParams,
+  })
+  .refine(
+    (d) =>
+      !d.isMinor ||
+      (!!d.minorName && !!d.minorDateOfBirth && !!d.guardianName),
+    {
+      message:
+        "Minor name, date of birth and parent/guardian name are required for a minor",
+      path: ["minorName"],
+    }
+  );
+
+export type BookerWaiverInput = z.infer<typeof bookerWaiverSchema>;
+
+export const waiverSubmitSchema = z.discriminatedUnion("type", [
+  guestWaiverSchema,
+  z.object({
+    type: z.literal("booker"),
+    fullName: z.string().min(2).max(120),
+    dateOfBirth: z.string().min(1),
+    address: z.string().min(3).max(300),
+    email: z.email(),
+    initials: z.record(z.string(), z.string().min(1).max(8)),
+    isMinor: z.boolean().default(false),
+    minorName: z.string().max(120).optional(),
+    minorDateOfBirth: z.string().max(40).optional(),
+    guardianName: z.string().max(120).optional(),
+    ...linkParams,
+  }),
+]);
 
 export type WaiverSubmitInput = z.infer<typeof waiverSubmitSchema>;
 

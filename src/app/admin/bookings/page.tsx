@@ -23,8 +23,10 @@ import {
   FileCheck,
   FileWarning,
   Link2,
+  IdCard,
 } from "lucide-react";
 import type { WaiverRecord } from "@/lib/serializers";
+import QRCode from "qrcode";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-yellow-500/15 text-yellow-400",
@@ -65,6 +67,7 @@ export default function AdminBookingsPage() {
   const [signingLink, setSigningLink] = useState("");
   const [waiversLoading, setWaiversLoading] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setBookings(await getAllBookings());
@@ -97,12 +100,18 @@ export default function AdminBookingsPage() {
     }
     let active = true;
     setWaiversLoading(true);
+    setQrDataUrl(null);
     fetch(`/api/bookings/${encodeURIComponent(id)}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!active || !data) return;
         setWaivers(data.waivers ?? []);
         setSigningLink(data.signingLink ?? "");
+        if (data.signingLink) {
+          QRCode.toDataURL(data.signingLink, { width: 200, margin: 1 })
+            .then((url) => active && setQrDataUrl(url))
+            .catch(() => {});
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -631,82 +640,133 @@ export default function AdminBookingsPage() {
                 </div>
               </div>
 
-              {/* Guest Waivers */}
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                    Guest Waivers
-                  </h4>
-                  <span className="text-xs font-medium text-gray-400">
-                    {waivers.length} of {selectedBooking.guests} guest
-                    {selectedBooking.guests === 1 ? "" : "s"} signed
-                  </span>
-                </div>
-
-                {/* Shareable signing link */}
-                <div className="mb-3 flex items-center gap-2 rounded-lg bg-white/5 p-3">
-                  <Link2 className="h-4 w-4 shrink-0 text-[#E9E9EC]" />
-                  <input
-                    readOnly
-                    value={signingLink}
-                    placeholder="Generating link..."
-                    className="flex-1 truncate bg-transparent text-xs text-gray-300 outline-none"
-                  />
-                  <button
-                    onClick={copySigningLink}
-                    disabled={!signingLink}
-                    className="flex items-center gap-1 rounded-md bg-[#E9E9EC]/20 px-2.5 py-1 text-xs font-medium text-[#E9E9EC] transition hover:bg-[#E9E9EC]/30 disabled:opacity-50"
+              {/* Waivers */}
+              {(() => {
+                const bookerWaiver = waivers.find((w) => w.type === "booker");
+                const guestWaivers = waivers.filter((w) => w.type === "guest");
+                const bookerLink = signingLink ? `${signingLink}&type=booker` : "";
+                const row = (w: WaiverRecord) => (
+                  <li
+                    key={w.id}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-white/5 p-3"
                   >
-                    <Copy className="h-3 w-3" />
-                    {linkCopied ? "Copied" : "Copy"}
-                  </button>
-                </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <FileCheck className="h-4 w-4 shrink-0 text-green-400" />
+                        <span className="truncate text-sm font-medium text-white">
+                          {w.fullName}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-gray-400">
+                        {new Date(w.signedAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {w.hasId && (
+                        <a
+                          href={`/api/waivers/${w.id}/id`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-white/20"
+                        >
+                          <IdCard className="h-3 w-3" />
+                          ID
+                        </a>
+                      )}
+                      {w.pdfUrl && (
+                        <a
+                          href={`/api/waivers/${w.id}`}
+                          className="flex items-center gap-1 rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-white/20"
+                        >
+                          <Download className="h-3 w-3" />
+                          PDF
+                        </a>
+                      )}
+                    </div>
+                  </li>
+                );
 
-                {waiversLoading ? (
-                  <p className="text-sm text-gray-500">Loading waivers...</p>
-                ) : waivers.length === 0 ? (
-                  <div className="flex items-center gap-2 rounded-lg bg-white/5 p-4 text-sm text-gray-400">
-                    <FileWarning className="h-4 w-4 text-yellow-400" />
-                    No guests have signed yet. Share the link above so each guest
-                    can sign before boarding.
-                  </div>
-                ) : (
-                  <ul className="space-y-2">
-                    {waivers.map((w) => (
-                      <li
-                        key={w.id}
-                        className="flex items-center justify-between gap-3 rounded-lg bg-white/5 p-3"
-                      >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <FileCheck className="h-4 w-4 shrink-0 text-green-400" />
-                            <span className="truncate text-sm font-medium text-white">
-                              {w.fullName}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 truncate text-xs text-gray-400">
-                            {w.email} ·{" "}
-                            {new Date(w.signedAt).toLocaleString()}
-                          </p>
+                return (
+                  <div className="space-y-5">
+                    {/* Booker waiver */}
+                    <div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                          Booker Waiver
+                        </h4>
+                        <a
+                          href={bookerLink || undefined}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-[#E9E9EC] hover:underline"
+                        >
+                          Open booker link
+                        </a>
+                      </div>
+                      {waiversLoading ? (
+                        <p className="text-sm text-gray-500">Loading…</p>
+                      ) : bookerWaiver ? (
+                        <ul>{row(bookerWaiver)}</ul>
+                      ) : (
+                        <div className="flex items-center gap-2 rounded-lg bg-white/5 p-3 text-sm text-yellow-400/90">
+                          <FileWarning className="h-4 w-4" />
+                          Not signed yet — required before boarding.
                         </div>
-                        {w.pdfUrl ? (
-                          <a
-                            href={`/api/waivers/${w.id}`}
-                            className="flex shrink-0 items-center gap-1 rounded-md bg-white/10 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-white/20"
-                          >
-                            <Download className="h-3 w-3" />
-                            PDF
-                          </a>
-                        ) : (
-                          <span className="shrink-0 text-xs text-gray-500">
-                            No PDF
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                      )}
+                    </div>
+
+                    {/* Guest waivers */}
+                    <div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                          Guest Waivers
+                        </h4>
+                        <span className="text-xs font-medium text-gray-400">
+                          {guestWaivers.length} of {selectedBooking.guests} signed
+                        </span>
+                      </div>
+
+                      {/* Guest signing link + QR */}
+                      <div className="mb-3 flex items-center gap-2 rounded-lg bg-white/5 p-3">
+                        <Link2 className="h-4 w-4 shrink-0 text-[#E9E9EC]" />
+                        <input
+                          readOnly
+                          value={signingLink}
+                          placeholder="Generating link..."
+                          className="flex-1 truncate bg-transparent text-xs text-gray-300 outline-none"
+                        />
+                        <button
+                          onClick={copySigningLink}
+                          disabled={!signingLink}
+                          className="flex items-center gap-1 rounded-md bg-[#E9E9EC]/20 px-2.5 py-1 text-xs font-medium text-[#E9E9EC] transition hover:bg-[#E9E9EC]/30 disabled:opacity-50"
+                        >
+                          <Copy className="h-3 w-3" />
+                          {linkCopied ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                      {qrDataUrl && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={qrDataUrl}
+                          alt="Guest check-in QR"
+                          className="mb-3 h-32 w-32 rounded-md bg-white p-1.5"
+                        />
+                      )}
+
+                      {waiversLoading ? (
+                        <p className="text-sm text-gray-500">Loading…</p>
+                      ) : guestWaivers.length === 0 ? (
+                        <div className="flex items-center gap-2 rounded-lg bg-white/5 p-4 text-sm text-gray-400">
+                          <FileWarning className="h-4 w-4 text-yellow-400" />
+                          No guests have signed yet.
+                        </div>
+                      ) : (
+                        <ul className="space-y-2">{guestWaivers.map(row)}</ul>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Notes */}
               <div>

@@ -75,34 +75,35 @@ export function dbBookingToBooking(row: DbBooking): Booking {
 export type WaiverRecord = {
   id: string;
   bookingId: string | null;
+  type: "booker" | "guest";
   fullName: string;
   dateOfBirth: string;
-  email: string;
-  phone: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  emergencyContactRelation: string | null;
-  typedSignature: string;
-  agreedToTerms: boolean;
+  email: string | null;
+  address: string | null;
+  isMinor: boolean;
+  minorName: string | null;
+  signatureImageUrl: string | null;
+  hasId: boolean; // ID image exists; download only via admin /api/waivers/[id]/id
   status: "pending" | "signed";
   pdfUrl: string | null;
   signedAt: string;
   createdAt: string;
 };
 
+// NOTE: never includes idImageUrl — the ID photo is admin-only via a proxied route.
 export function dbWaiverToWaiver(row: DbWaiver): WaiverRecord {
   return {
     id: row.id,
     bookingId: row.bookingId,
+    type: row.type,
     fullName: row.fullName,
     dateOfBirth: row.dateOfBirth,
     email: row.email,
-    phone: row.phone,
-    emergencyContactName: row.emergencyContactName,
-    emergencyContactPhone: row.emergencyContactPhone,
-    emergencyContactRelation: row.emergencyContactRelation,
-    typedSignature: row.typedSignature,
-    agreedToTerms: row.agreedToTerms,
+    address: row.address,
+    isMinor: row.isMinor,
+    minorName: row.minorName,
+    signatureImageUrl: row.signatureImageUrl,
+    hasId: !!row.idImageUrl,
     status: row.status,
     pdfUrl: row.pdfUrl,
     signedAt: row.signedAt.toISOString(),

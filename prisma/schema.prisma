@@ -53,6 +53,11 @@ enum WaiverStatus {
   signed
 }
 
+enum WaiverType {
+  booker
+  guest
+}
+
 model Booking {
   id      String @id // human-readable "YY-..." from generateBookingId()
   yachtId String // free string, references static yacht data in src/lib/data/yachts.ts
@@ -111,17 +116,29 @@ model Waiver {
   booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   bookingId String? // nullable so standalone waivers survive and booking delete sets null
 
+  type WaiverType @default(guest) // booker (DJ Youssef) vs guest (G-Nomads)
+
   fullName    String
   dateOfBirth String
-  email       String
-  phone       String
+  email       String?
+  phone       String?
+  address     String?
 
-  emergencyContactName     String
-  emergencyContactPhone    String
-  emergencyContactRelation String?
+  // Booker waiver: typed initials per section (sectionId -> initials)
+  initials Json?
 
-  typedSignature String
-  agreedToTerms  Boolean @default(false)
+  // Minor / parent-guardian block (booker waiver)
+  isMinor                   Boolean @default(false)
+  minorName                 String?
+  minorDateOfBirth          String?
+  guardianName              String?
+  guardianSignatureImageUrl String?
+
+  // Real drawn signature (PNG in Blob) — replaces typed signature
+  signatureImageUrl String?
+  idImageUrl        String? // government ID photo (admin-only, never returned publicly)
+
+  agreedToTerms Boolean @default(false)
 
   status   WaiverStatus @default(signed)
   pdfUrl   String? // Vercel Blob URL of the generated signed PDF

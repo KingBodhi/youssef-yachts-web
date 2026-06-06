@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo, forwardRef } from "react";
+import { useState, useCallback, useMemo, useEffect, forwardRef } from "react";
 import Image from "next/image";
+import QRCode from "qrcode";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,6 +22,7 @@ import {
   Check,
   Ship,
   CreditCard,
+  FileWarning,
   Mail,
   Phone,
   User,
@@ -1002,8 +1004,17 @@ function SuccessState({
   data: BookingFormData;
   signingLink?: string;
 }) {
-  const waiverHref = signingLink || "/waiver";
+  const bookerHref = signingLink ? `${signingLink}&type=booker` : "/waiver?type=booker";
   const [copied, setCopied] = useState(false);
+  const [qr, setQr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!signingLink) return;
+    QRCode.toDataURL(signingLink, { width: 240, margin: 1 })
+      .then(setQr)
+      .catch(() => setQr(null));
+  }, [signingLink]);
+
   const copyLink = async () => {
     if (!signingLink) return;
     try {
@@ -1014,6 +1025,7 @@ function SuccessState({
       /* clipboard unavailable */
     }
   };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1035,15 +1047,39 @@ function SuccessState({
         details.
       </p>
 
+      {/* Booker waiver — required before boarding */}
+      <div className="mx-auto mt-8 max-w-md rounded-lg border border-amber-400/40 bg-amber-400/5 p-6 text-left">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-300">
+          <FileWarning className="h-4 w-4" /> Required Before Boarding
+        </h3>
+        <p className="mt-2 text-sm text-muted">
+          Complete your charter liability waiver and upload your ID now. You can
+          also finish it later from your booking link, but it{" "}
+          <span className="text-foreground">must be submitted before you board</span>.
+        </p>
+        <Button asChild size="lg" className="mt-4 w-full">
+          <a href={bookerHref}>Complete My Waiver &amp; ID</a>
+        </Button>
+      </div>
+
+      {/* Guest waiver link + QR */}
       {signingLink && (
-        <div className="mx-auto mt-8 max-w-md rounded-lg border border-primary/30 bg-primary/5 p-5 text-left">
+        <div className="mx-auto mt-6 max-w-md rounded-lg border border-primary/30 bg-primary/5 p-6 text-left">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Guest Waiver Link
+            Guest Waivers
           </h3>
           <p className="mt-2 text-sm text-muted">
-            Every guest must sign the liability waiver before boarding. Share
-            this link with your whole party.
+            Every guest signs their own waiver at check-in. Share this link or
+            have them scan the QR code.
           </p>
+          {qr && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={qr}
+              alt="Guest waiver QR code"
+              className="mx-auto mt-4 h-40 w-40 rounded-md bg-white p-2"
+            />
+          )}
           <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-navy-light/60 p-2">
             <input
               readOnly
@@ -1059,44 +1095,10 @@ function SuccessState({
           </div>
         </div>
       )}
-      <div className="mx-auto mt-8 max-w-sm rounded-lg border border-border bg-navy-light/50 p-6 text-left">
-        <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary">
-          Next Steps
-        </h3>
-        <ol className="space-y-3 text-sm text-muted">
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-              1
-            </span>
-            Our team will confirm your charter and arrange the balance.
-          </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-              2
-            </span>
-            Have every guest complete the{" "}
-            <a
-              href={waiverHref}
-              className="text-primary underline underline-offset-2"
-            >
-              digital waiver
-            </a>{" "}
-            before your charter date.
-          </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-              3
-            </span>
-            Arrive at {yacht.location.marina} 15 minutes before departure.
-          </li>
-        </ol>
-      </div>
-      <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-        <Button asChild size="lg">
-          <a href="/">Return Home</a>
-        </Button>
+
+      <div className="mt-10">
         <Button asChild variant="outline" size="lg">
-          <a href={waiverHref}>Complete Waiver</a>
+          <a href="/">Return Home</a>
         </Button>
       </div>
     </motion.div>

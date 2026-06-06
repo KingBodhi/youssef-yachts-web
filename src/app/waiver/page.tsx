@@ -1,123 +1,150 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Shield,
-  AlertTriangle,
-  Heart,
-  Wine,
-  DollarSign,
-  Siren,
-  Camera,
-  Scale,
-  CheckCircle,
   FileText,
   Anchor,
   AlertCircle,
-  type LucideIcon,
+  CheckCircle,
+  Upload,
+  IdCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { waiverSections } from "@/lib/waiver-content";
-import { waiverFormSchema, type WaiverFormData } from "@/lib/schemas";
-
-const SECTION_ICONS: Record<string, LucideIcon> = {
-  "assumption-of-risk": AlertTriangle,
-  "release-of-liability": Shield,
-  medical: Heart,
-  alcohol: Wine,
-  "property-damage": DollarSign,
-  emergency: Siren,
-  "photo-video": Camera,
-  "governing-law": Scale,
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, delay: i * 0.1, ease: [0, 0, 0.2, 1] as const },
-  }),
-};
-
-const stagger = {
-  visible: { transition: { staggerChildren: 0.08 } },
-};
+import {
+  SignatureField,
+  type SignatureFieldHandle,
+} from "@/components/ui/signature-pad";
+import { getWaiverDoc } from "@/lib/waiver-content";
 
 const inputClasses =
-  "w-full rounded-sm border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
+  "w-full rounded-md border border-border bg-surface px-4 py-3 text-base text-foreground placeholder:text-muted/60 transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
 const labelClasses = "mb-1.5 block text-sm font-medium text-foreground/80";
-const errorClasses = "mt-1 text-xs text-red-400";
+
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [head, b64] = dataUrl.split(",");
+  const mime = head.match(/:(.*?);/)?.[1] ?? "image/png";
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
 
 function WaiverForm() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("booking") ?? undefined;
   const token = searchParams.get("token") ?? undefined;
+  const type = searchParams.get("type") === "booker" ? "booker" : "guest";
+  const doc = useMemo(() => getWaiverDoc(type), [type]);
 
+  const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [address, setAddress] = useState("");
+  const [email, setEmail] = useState("");
+  const [initials, setInitials] = useState<Record<string, string>>({});
+  const [isMinor, setIsMinor] = useState(false);
+  const [minorName, setMinorName] = useState("");
+  const [minorDateOfBirth, setMinorDateOfBirth] = useState("");
+  const [guardianName, setGuardianName] = useState("");
+
+  const [signature, setSignature] = useState<string | null>(null);
+  const [guardianSignature, setGuardianSignature] = useState<string | null>(
+    null
+  );
+  const [idFile, setIdFile] = useState<File | null>(null);
+  const [idPreview, setIdPreview] = useState<string | null>(null);
+
+  const [submitting, setSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [error, setError] = useState("");
+  const sigRef = useRef<SignatureFieldHandle>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<WaiverFormData>({
-    resolver: zodResolver(waiverFormSchema),
-    defaultValues: {
-      fullName: "",
-      dateOfBirth: "",
-      email: "",
-      phone: "",
-      emergencyContactName: "",
-      emergencyContactPhone: "",
-      emergencyContactRelation: "",
-      agreedToTerms: undefined,
-      typedSignature: "",
-    },
-  });
+  const isBooker = type === "booker";
+  const initialSections = doc.sections.filter((s) => s.requiresInitials);
 
-  const onSubmit = async (data: WaiverFormData) => {
-    setSubmitError("");
+  function validate(): string | null {
+    if (fullName.trim().length < 2) return "Please enter your full legal name.";
+    if (!dateOfBirth) return "Please enter your date of birth.";
+    if (isBooker) {
+      if (address.trim().length < 3) return "Please enter your address.";
+      if (!/^\S+@\S+\.\S+$/.test(email)) return "Please enter a valid email.";
+      for (const s of initialSections) {
+        if (!initials[s.id]?.trim())
+          return "Please initial every section of the agreement.";
+      }
+      if (isMinor && (!minorName || !minorDateOfBirth || !guardianName))
+        return "Please complete the minor and parent/guardian details.";
+    }
+    if (!signature) return "Please draw your signature.";
+    if (!idFile) return "Please upload a photo of your government ID.";
+    return null;
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const problem = validate();
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setError("");
+    setSubmitting(true);
     try {
-      const res = await fetch("/api/waivers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, bookingId, token }),
-      });
+      const payload = isBooker
+        ? {
+            type,
+            fullName,
+            dateOfBirth,
+            address,
+            email,
+            initials,
+            isMinor,
+            minorName: isMinor ? minorName : undefined,
+            minorDateOfBirth: isMinor ? minorDateOfBirth : undefined,
+            guardianName: isMinor ? guardianName : undefined,
+            bookingId,
+            token,
+          }
+        : { type, fullName, dateOfBirth, bookingId, token };
 
+      const fd = new FormData();
+      fd.append("payload", JSON.stringify(payload));
+      fd.append("signature", dataUrlToBlob(signature!), "signature.png");
+      fd.append("idImage", idFile!, idFile!.name || "id.jpg");
+      if (isBooker && isMinor && guardianSignature)
+        fd.append(
+          "guardianSignature",
+          dataUrlToBlob(guardianSignature),
+          "guardian.png"
+        );
+
+      const res = await fetch("/api/waivers", { method: "POST", body: fd });
       if (res.status === 403) {
-        setSubmitError(
-          "This signing link is invalid or has expired. Please request a new link from Hurry Up Slowly."
+        setError(
+          "This signing link is invalid or has expired. Please request a new link."
         );
         return;
       }
       if (!res.ok) {
-        setSubmitError(
-          "We couldn't submit your waiver. Please try again or contact us."
-        );
+        setError("We couldn't submit your waiver. Please try again.");
         return;
       }
-
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setSubmitError(
-        "Something went wrong. Please check your connection and try again."
-      );
+      setError("Something went wrong. Please check your connection.");
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }
 
   if (isSubmitted) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pt-20">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
           className="mx-auto max-w-lg rounded-lg border border-border bg-surface p-12 text-center"
         >
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10">
@@ -127,45 +154,14 @@ function WaiverForm() {
             Waiver Signed Successfully
           </h2>
           <p className="mt-4 text-muted">
-            Your waiver has been recorded and a signed PDF has been saved for our
-            records. Each additional guest must complete their own waiver before
-            boarding.
+            Thank you, {fullName.split(" ")[0]}. Your signed waiver and ID have
+            been recorded for {doc.entity}.
+            {!isBooker &&
+              " Each additional guest must complete their own waiver before boarding."}
           </p>
-
-          <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 p-6 text-left">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-light">
-              Reminders for Charter Day
-            </h3>
-            <ul className="mt-4 space-y-2.5 text-sm text-muted">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                Arrive 15-20 minutes before your scheduled departure
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                Bring reef-safe sunscreen, sunglasses, and swimwear
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                Wear non-marking shoes on deck
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                Inform the captain of any medical conditions
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                All guests must be present for the safety briefing
-              </li>
-            </ul>
-          </div>
-
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button asChild>
               <a href="/">Return Home</a>
-            </Button>
-            <Button variant="outline" asChild>
-              <a href="/contact">Contact Us</a>
             </Button>
           </div>
         </motion.div>
@@ -175,399 +171,251 @@ function WaiverForm() {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Hero */}
-      <section className="relative flex items-center justify-center bg-gradient-to-b from-navy via-background to-background pt-20">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
-            <motion.div
-              variants={fadeUp}
-              custom={0}
-              className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10"
-            >
-              <FileText className="h-7 w-7 text-primary" />
-            </motion.div>
-            <motion.p
-              variants={fadeUp}
-              custom={1}
-              className="mb-3 text-sm font-medium uppercase tracking-[0.25em] text-primary-light"
-            >
-              Required Before Boarding
-            </motion.p>
-            <motion.h1
-              variants={fadeUp}
-              custom={2}
-              className="font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl"
-            >
-              Digital{" "}
-              <span className="text-brand-gradient">Liability Waiver</span>
-            </motion.h1>
-            <motion.p
-              variants={fadeUp}
-              custom={3}
-              className="mx-auto mt-4 max-w-2xl text-muted"
-            >
-              Please read each section carefully before signing. All guests aged
-              18 and older must complete this waiver prior to boarding. Minors
-              must have a parent or legal guardian sign on their behalf.
-            </motion.p>
-          </motion.div>
+      <section className="relative bg-gradient-to-b from-navy via-background to-background pt-24">
+        <div className="mx-auto max-w-3xl px-4 py-12 text-center sm:px-6">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+            <FileText className="h-7 w-7 text-primary" />
+          </div>
+          <p className="mb-3 text-sm font-medium uppercase tracking-[0.25em] text-primary-light">
+            Required Before Boarding
+          </p>
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            {isBooker ? "Charter" : "Guest"}{" "}
+            <span className="text-brand-gradient">Liability Waiver</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-muted">
+            {doc.entity} — please read carefully{isBooker ? ", initial each section," : ""}{" "}
+            draw your signature and upload a photo of your ID.
+          </p>
         </div>
       </section>
 
-      {/* Waiver Form */}
       <section className="relative pb-24">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
           {bookingId && (
             <div className="mb-8 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary-light">
               <Anchor className="h-4 w-4 shrink-0" />
-              You are signing for charter{" "}
-              <span className="font-semibold">{bookingId}</span>.
+              Signing for charter <span className="font-semibold">{bookingId}</span>.
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            {/* Legal Sections */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-40px" }}
-              variants={stagger}
-              className="space-y-6"
-            >
-              {waiverSections.map((section, i) => {
-                const Icon = SECTION_ICONS[section.id] ?? FileText;
-                return (
-                  <motion.div
-                    key={section.id}
-                    variants={fadeUp}
-                    custom={i}
-                    className="rounded-lg border border-border bg-surface p-6 sm:p-8"
-                  >
-                    <div className="mb-4 flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <h2 className="pt-1.5 font-heading text-lg font-semibold text-foreground">
-                        {section.title}
-                      </h2>
-                    </div>
-                    <p className="text-sm leading-relaxed text-muted">
-                      {section.content}
-                    </p>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+          <form onSubmit={onSubmit} noValidate className="space-y-6">
+            <p className="text-sm leading-relaxed text-muted">{doc.intro}</p>
 
-            {/* Personal Information */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={stagger}
-              className="mt-12"
-            >
-              <motion.div variants={fadeUp} custom={0} className="mb-6">
-                <h2 className="font-heading text-xl font-semibold text-foreground">
-                  Personal Information
-                </h2>
-                <div className="mt-2 h-0.5 w-12 rounded bg-primary" />
-              </motion.div>
-
-              <motion.div
-                variants={fadeUp}
-                custom={1}
-                className="rounded-lg border border-border bg-surface p-6 sm:p-8"
+            {/* Legal sections */}
+            {doc.sections.map((section) => (
+              <div
+                key={section.id}
+                className="rounded-lg border border-border bg-surface p-6"
               >
-                <div className="space-y-5">
-                  {/* Full Name + DOB */}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="fullName" className={labelClasses}>
-                        Full Legal Name *
-                      </label>
-                      <input
-                        id="fullName"
-                        type="text"
-                        className={inputClasses}
-                        placeholder="John Michael Doe"
-                        {...register("fullName")}
-                      />
-                      {errors.fullName && (
-                        <p className={errorClasses}>{errors.fullName.message}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="dateOfBirth" className={labelClasses}>
-                        Date of Birth *
-                      </label>
-                      <input
-                        id="dateOfBirth"
-                        type="date"
-                        className={inputClasses}
-                        {...register("dateOfBirth")}
-                      />
-                      {errors.dateOfBirth && (
-                        <p className={errorClasses}>
-                          {errors.dateOfBirth.message}
-                        </p>
-                      )}
-                    </div>
+                {section.heading && (
+                  <h2 className="mb-3 font-heading text-base font-semibold text-foreground">
+                    {section.heading}
+                  </h2>
+                )}
+                <p className="text-sm leading-relaxed text-muted">
+                  {section.body}
+                </p>
+                {section.requiresInitials && (
+                  <div className="mt-4 flex items-center gap-3">
+                    <label className="text-sm font-medium text-foreground/80">
+                      Initials *
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={initials[section.id] ?? ""}
+                      onChange={(e) =>
+                        setInitials((p) => ({
+                          ...p,
+                          [section.id]: e.target.value.toUpperCase(),
+                        }))
+                      }
+                      placeholder="ABC"
+                      className="w-24 rounded-md border border-border bg-background px-3 py-2 text-center text-base font-semibold uppercase tracking-widest text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
                   </div>
+                )}
+              </div>
+            ))}
 
-                  {/* Email + Phone */}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="email" className={labelClasses}>
-                        Email Address *
-                      </label>
+            {/* Personal info */}
+            <div className="rounded-lg border border-border bg-surface p-6">
+              <h2 className="mb-4 font-heading text-lg font-semibold text-foreground">
+                Your Details
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClasses}>Full Legal Name *</label>
+                  <input
+                    className={inputClasses}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="John Michael Doe"
+                  />
+                </div>
+                <div>
+                  <label className={labelClasses}>Date of Birth *</label>
+                  <input
+                    type="date"
+                    className={inputClasses}
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
+                </div>
+                {isBooker && (
+                  <>
+                    <div className="sm:col-span-2">
+                      <label className={labelClasses}>Address *</label>
                       <input
-                        id="email"
+                        className={inputClasses}
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Street, City, State, ZIP"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className={labelClasses}>Email *</label>
+                      <input
                         type="email"
                         className={inputClasses}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         placeholder="john@example.com"
-                        {...register("email")}
                       />
-                      {errors.email && (
-                        <p className={errorClasses}>{errors.email.message}</p>
-                      )}
                     </div>
-                    <div>
-                      <label htmlFor="phone" className={labelClasses}>
-                        Phone Number *
-                      </label>
-                      <input
-                        id="phone"
-                        type="tel"
-                        className={inputClasses}
-                        placeholder="(305) 555-0199"
-                        {...register("phone")}
-                      />
-                      {errors.phone && (
-                        <p className={errorClasses}>{errors.phone.message}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
+                  </>
+                )}
+              </div>
 
-            {/* Emergency Contact */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={stagger}
-              className="mt-12"
-            >
-              <motion.div variants={fadeUp} custom={0} className="mb-6">
-                <h2 className="font-heading text-xl font-semibold text-foreground">
-                  Emergency Contact
-                </h2>
-                <div className="mt-2 h-0.5 w-12 rounded bg-primary" />
-              </motion.div>
-
-              <motion.div
-                variants={fadeUp}
-                custom={1}
-                className="rounded-lg border border-border bg-surface p-6 sm:p-8"
-              >
-                <div className="space-y-5">
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div>
-                      <label
-                        htmlFor="emergencyContactName"
-                        className={labelClasses}
-                      >
-                        Contact Name *
-                      </label>
-                      <input
-                        id="emergencyContactName"
-                        type="text"
-                        className={inputClasses}
-                        placeholder="Jane Doe"
-                        {...register("emergencyContactName")}
-                      />
-                      {errors.emergencyContactName && (
-                        <p className={errorClasses}>
-                          {errors.emergencyContactName.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="emergencyContactPhone"
-                        className={labelClasses}
-                      >
-                        Contact Phone *
-                      </label>
-                      <input
-                        id="emergencyContactPhone"
-                        type="tel"
-                        className={inputClasses}
-                        placeholder="(305) 555-0100"
-                        {...register("emergencyContactPhone")}
-                      />
-                      {errors.emergencyContactPhone && (
-                        <p className={errorClasses}>
-                          {errors.emergencyContactPhone.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="emergencyContactRelation"
-                        className={labelClasses}
-                      >
-                        Relationship *
-                      </label>
-                      <input
-                        id="emergencyContactRelation"
-                        type="text"
-                        className={inputClasses}
-                        placeholder="Spouse, Parent, Sibling..."
-                        {...register("emergencyContactRelation")}
-                      />
-                      {errors.emergencyContactRelation && (
-                        <p className={errorClasses}>
-                          {errors.emergencyContactRelation.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Agreement & Signature */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={stagger}
-              className="mt-12"
-            >
-              <motion.div variants={fadeUp} custom={0} className="mb-6">
-                <h2 className="font-heading text-xl font-semibold text-foreground">
-                  Agreement & Signature
-                </h2>
-                <div className="mt-2 h-0.5 w-12 rounded bg-primary" />
-              </motion.div>
-
-              <motion.div
-                variants={fadeUp}
-                custom={1}
-                className="rounded-lg border border-border bg-surface p-6 sm:p-8"
-              >
-                <div className="space-y-6">
-                  {/* Checkbox */}
-                  <label className="flex cursor-pointer items-start gap-3">
+              {isBooker && (
+                <div className="mt-4">
+                  <label className="flex cursor-pointer items-center gap-3">
                     <input
                       type="checkbox"
-                      className="mt-1 h-5 w-5 shrink-0 rounded border-border bg-surface accent-primary"
-                      {...register("agreedToTerms")}
+                      className="h-5 w-5 rounded border-border bg-surface accent-primary"
+                      checked={isMinor}
+                      onChange={(e) => setIsMinor(e.target.checked)}
                     />
-                    <span className="text-sm leading-relaxed text-muted">
-                      I have read, understood, and agree to all terms and
-                      conditions outlined in this liability waiver. I
-                      acknowledge that this is a legally binding document and
-                      that I am signing it voluntarily. I confirm that I am at
-                      least 18 years of age or am the parent/legal guardian of a
-                      participating minor.
+                    <span className="text-sm text-muted">
+                      A participant is under 18 (add parent/guardian details)
                     </span>
                   </label>
-                  {errors.agreedToTerms && (
-                    <p className={errorClasses}>
-                      {errors.agreedToTerms.message}
-                    </p>
-                  )}
-
-                  {/* Typed Signature */}
-                  <div>
-                    <label htmlFor="typedSignature" className={labelClasses}>
-                      Typed Signature (Full Legal Name) *
-                    </label>
-                    <p className="mb-2 text-xs text-muted/70">
-                      By typing your name below, you acknowledge that this
-                      constitutes a legal electronic signature.
-                    </p>
-                    <input
-                      id="typedSignature"
-                      type="text"
-                      className={`${inputClasses} font-heading text-lg italic`}
-                      placeholder="Your full legal name"
-                      {...register("typedSignature")}
-                    />
-                    {errors.typedSignature && (
-                      <p className={errorClasses}>
-                        {errors.typedSignature.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Date display */}
-                  <div className="flex items-center gap-2 text-sm text-muted">
-                    <span className="font-medium text-foreground/70">Date:</span>
-                    {new Date().toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </div>
-
-                  {submitError && (
-                    <div className="flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                      {submitError}
+                  {isMinor && (
+                    <div className="mt-4 grid gap-4 rounded-md border border-border bg-background p-4 sm:grid-cols-2">
+                      <div>
+                        <label className={labelClasses}>Minor Name *</label>
+                        <input
+                          className={inputClasses}
+                          value={minorName}
+                          onChange={(e) => setMinorName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClasses}>Minor DOB *</label>
+                        <input
+                          type="date"
+                          className={inputClasses}
+                          value={minorDateOfBirth}
+                          onChange={(e) => setMinorDateOfBirth(e.target.value)}
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className={labelClasses}>
+                          Parent/Guardian Name *
+                        </label>
+                        <input
+                          className={inputClasses}
+                          value={guardianName}
+                          onChange={(e) => setGuardianName(e.target.value)}
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className={labelClasses}>
+                          Parent/Guardian Signature *
+                        </label>
+                        <SignatureField
+                          label="Parent/Guardian signature"
+                          onChange={setGuardianSignature}
+                        />
+                      </div>
                     </div>
                   )}
-
-                  {/* Submit */}
-                  <div className="pt-2">
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="h-4 w-4 animate-spin"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                            />
-                          </svg>
-                          Submitting...
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-2">
-                          <Anchor className="h-4 w-4" />
-                          Sign & Submit Waiver
-                        </span>
-                      )}
-                    </Button>
-                  </div>
                 </div>
-              </motion.div>
-            </motion.div>
+              )}
+            </div>
+
+            {/* ID upload */}
+            <div className="rounded-lg border border-border bg-surface p-6">
+              <h2 className="mb-2 flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
+                <IdCard className="h-5 w-5 text-primary" /> Government ID *
+              </h2>
+              <p className="mb-4 text-sm text-muted">
+                Upload a clear photo of a valid government-issued ID. Stored
+                securely and visible only to staff.
+              </p>
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background px-4 py-6 text-sm text-muted transition-colors hover:border-primary hover:text-foreground">
+                <Upload className="h-4 w-4" />
+                {idFile ? "Change ID photo" : "Tap to upload / take a photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    setIdFile(f);
+                    setIdPreview(f ? URL.createObjectURL(f) : null);
+                  }}
+                />
+              </label>
+              {idPreview && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={idPreview}
+                  alt="ID preview"
+                  className="mt-4 max-h-48 rounded-md border border-border object-contain"
+                />
+              )}
+            </div>
+
+            {/* Signature */}
+            <div className="rounded-lg border border-border bg-surface p-6">
+              <h2 className="mb-2 font-heading text-lg font-semibold text-foreground">
+                Signature *
+              </h2>
+              <p className="mb-4 text-sm text-muted">
+                Sign with your finger (touchscreen) or mouse. This is your
+                binding electronic signature.
+              </p>
+              <SignatureField
+                ref={sigRef}
+                label="Participant signature"
+                onChange={setSignature}
+              />
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full sm:w-auto"
+              disabled={submitting}
+            >
+              {submitting ? (
+                "Submitting..."
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Anchor className="h-4 w-4" /> Sign &amp; Submit Waiver
+                </span>
+              )}
+            </Button>
           </form>
         </div>
       </section>

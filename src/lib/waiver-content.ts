@@ -1,62 +1,114 @@
-// Single source of truth for the waiver legal text. Imported by both the public
-// waiver page (display) and the server-side PDF generator so the signed document
-// matches exactly what the guest agreed to. Pure module — no React, no Node.
-import { BRAND } from "@/lib/constants";
+// Exact legal text for the two charter waivers. Pure module (no React/Node) —
+// shared by the waiver page and the server PDF generator so the signed document
+// matches what the signer agreed to.
+//
+// - BOOKER_WAIVER  (DJ YOUSSEF LLC): signed by the person booking, at checkout.
+//                  Initial-each-section + minor/guardian block.
+// - GUEST_WAIVER   (G-NOMADS LLC): signed by each guest at check-in.
+//
+// Bracketed template placeholders from the source PDFs are resolved to their
+// intended values (Florida / Miami-Dade County / the operating entity). Obvious
+// OCR typos (PRINICIPALS, IDEMNIFY) are corrected; legal wording is preserved.
 
-export const WAIVER_TITLE = "Liability Waiver & Release";
+export type WaiverDocType = "booker" | "guest";
 
 export interface WaiverSection {
   id: string;
-  title: string;
-  content: string;
+  heading?: string;
+  body: string;
+  requiresInitials?: boolean;
 }
 
-export const waiverSections: WaiverSection[] = [
-  {
-    id: "assumption-of-risk",
-    title: "1. Assumption of Risk",
-    content:
-      "I acknowledge that participating in yacht charter activities involves inherent risks, including but not limited to: drowning, slipping, falling, sunburn, seasickness, marine life encounters, equipment malfunction, and adverse weather conditions. I voluntarily assume all risks, known and unknown, associated with participating in this charter, including travel to and from the vessel. I understand that conditions on the water can change rapidly and agree to follow all safety instructions given by the captain and crew at all times.",
-  },
-  {
-    id: "release-of-liability",
-    title: "2. Release of Liability",
-    content: `I, on behalf of myself, my heirs, executors, administrators, and assigns, hereby release, waive, and forever discharge ${BRAND.name}, its owners, operators, employees, agents, captains, and crew members from any and all liability, claims, demands, actions, and causes of action whatsoever arising out of or related to any loss, damage, or injury, including death, that may be sustained by me or any property belonging to me, whether caused by the negligence of the releasees or otherwise, while participating in charter activities.`,
-  },
-  {
-    id: "medical",
-    title: "3. Medical Acknowledgment",
-    content:
-      "I certify that I am in good physical health and have no medical conditions that would prevent my safe participation in yacht charter activities. I understand that it is my responsibility to inform the captain of any medical conditions, disabilities, allergies, or medications that may affect my participation or require emergency attention. I authorize emergency medical treatment at my own expense if necessary. I understand that medical facilities may not be immediately accessible while on the water.",
-  },
-  {
-    id: "alcohol",
-    title: "4. Alcohol & Substance Policy",
-    content: `I understand that the consumption of alcoholic beverages on the vessel is permitted for guests 21 years of age and older. I acknowledge that excessive alcohol consumption increases the risk of injury and may impair judgment. I agree not to consume illegal substances aboard the vessel. I understand that the captain reserves the right to refuse service, limit alcohol consumption, or terminate the charter if any guest's behavior, due to intoxication or otherwise, poses a safety risk to themselves, other guests, or the crew. No refund will be issued in such cases.`,
-  },
-  {
-    id: "property-damage",
-    title: "5. Property Damage",
-    content: `I agree to be held financially responsible for any damage to the vessel, its equipment, furnishings, or any property of ${BRAND.name} caused by my willful misconduct, negligence, or failure to follow the captain's instructions. This includes but is not limited to: damage to upholstery, electronics, water toys, hull, and engine components. I agree to report any damage immediately to the captain. A damage assessment will be conducted at the conclusion of the charter, and repair or replacement costs will be billed accordingly.`,
-  },
-  {
-    id: "emergency",
-    title: "6. Emergency Medical Authorization",
-    content:
-      "In the event of a medical emergency, I authorize the captain and crew to administer basic first aid and to contact emergency medical services on my behalf. I understand and agree that any medical expenses incurred as a result of an emergency during the charter are my sole financial responsibility. I consent to being transported to the nearest medical facility if deemed necessary by the captain or emergency responders. I release the captain and crew from any liability related to emergency medical decisions made in good faith.",
-  },
-  {
-    id: "photo-video",
-    title: "7. Photo & Video Release",
-    content: `I grant ${BRAND.name}, its employees, and its affiliates the irrevocable right to use any photographs, video recordings, or other media taken during my charter for promotional, marketing, advertising, and editorial purposes across all media platforms, including but not limited to: website, social media, print, and digital advertising. I waive any right to compensation, inspection, or approval of the finished materials. I understand I may request to opt out of this clause by notifying the captain in writing prior to departure.`,
-  },
-  {
-    id: "governing-law",
-    title: "8. Governing Law & Jurisdiction",
-    content:
-      "This waiver and release shall be governed by and construed in accordance with the laws of the State of Florida and applicable federal maritime law. Any disputes arising from this agreement or the charter activities shall be resolved exclusively in the state or federal courts located in Miami-Dade County, Florida. If any provision of this waiver is found to be unenforceable, the remaining provisions shall remain in full force and effect. This waiver constitutes the entire agreement between the parties regarding the subject matter herein.",
-  },
-];
+export interface WaiverDoc {
+  type: WaiverDocType;
+  entity: string;
+  code?: string;
+  title: string;
+  intro: string;
+  sections: WaiverSection[];
+}
 
-export const WAIVER_AGREEMENT_STATEMENT =
-  "I have read, understood, and agree to all terms above. By typing my full legal name below, I am providing my electronic signature, which constitutes a legal and binding signature under the U.S. ESIGN Act.";
+export const BOOKER_WAIVER: WaiverDoc = {
+  type: "booker",
+  entity: "DJ YOUSSEF LLC",
+  code: "CSR/WAV/23-1",
+  title:
+    "CONTRACTUAL ASSUMPTION ACKNOWLEDGEMENT OF RISKS AND LIABILITY WAIVER AND RELEASE AGREEMENT",
+  intro:
+    "IN CONSIDERATION of being permitted to participate in the charter/rental provided by DJ YOUSSEF LLC for myself and/or any minor children for whom I am the legal parent/guardian or otherwise responsible, and for my/our heirs, personal representatives, or assigns:",
+  sections: [
+    {
+      id: "acknowledgement-of-risks",
+      heading: "ACKNOWLEDGEMENT OF RISKS",
+      requiresInitials: true,
+      body: "I fully acknowledge that some, but not all of the risks of participating in the charter in which I am about to engage may include (1) wind shear, inclement weather, lightning, variances and extremes of wind, weather and temperature; (2) any sense of balance, physical condition, ability to operate equipment, swim and/or follow directions; (3) collision, capsizing, sinking or other hazard which result in wetness, injury, exposure to the elements, hypothermia, impact of the body upon the water, injection of water into my body orifices, and/or drowning; (4) the presence of and/or injury, illness or death resulting from insects, animals and marine life forms; (5) equipment failure, operator error, transportation accidents; (6) heat or sun related injuries or illness, including sunburn, sunstroke or dehydration; (7) fatigue, chill, and/or dizziness which may diminish my/our reaction time and increase the risk of an accident; (8) slippery decks and/or steps when wet; (9) and any other activities incidental to the charter.",
+    },
+    {
+      id: "instructions-training",
+      requiresInitials: true,
+      body: "I specifically acknowledge that I have been given instructions/training in the safe use of the type of equipment used during this charter to my complete satisfaction, I understand them fully and I am physically/mentally able to participate in the charter which I am about to engage.",
+    },
+    {
+      id: "medical",
+      requiresInitials: true,
+      body: "I understand that past or present medical conditions may be contraindicative to my participation in the charter/rental. I affirm that I am not currently suffering from a cold or congestion or have an ear infection. I affirm that I do not have any infectious disease or illness (e.g., COVID or similar variants). I affirm that I do not have a history of seizures, dizziness, or fainting, nor a history of heart conditions (e.g., cardiovascular disease, angina, heart attack). I further affirm that I do not have a history of respiratory problems (e.g., emphysema or tuberculosis). I affirm that I am not currently suffering from back, spine and/or neck injuries. I affirm that I am not currently taking medication that carries a warning about any impairment of my physical or mental abilities.",
+    },
+    {
+      id: "assumption-of-risk",
+      heading: "CONTRACTUAL/EXPRESS ASSUMPTION OF RISK AND RESPONSIBILITY",
+      requiresInitials: true,
+      body: "I fully agree to assume all responsibility for all the risks of the DJ YOUSSEF LLC charter to which I am about to engage, whether identified above or not (I FULLY UNDERSTAND THAT I UNDERTAKE EVEN THOSE RISKS ARISING OUT OF THE NEGLIGENCE OF THE RELEASEES NAMED BELOW). My/Our participation in the charter is completely voluntary. I assume full responsibility for myself and any of my minor children for whom I am responsible. This responsibility that I assume on my behalf and that of my minor children, or those children for whom I am legally responsible, extends to any bodily injury, accidents, illnesses, paralysis, death, loss of personal property and expenses thereof as a result of any accident which may occur while we participate in the activity. I COMPLETELY UNDERSTAND AND AGREE TO ACCEPT ALL RESPONSIBILITY ON BEHALF OF MYSELF AND MY MINOR CHILDREN, OR THOSE CHILDREN FOR WHOM I AM LEGALLY RESPONSIBLE, EVEN IF THESE INJURIES, DEATH, OR LOSS OF PERSONAL PROPERTY ARE CAUSED IN WHOLE OR IN PART BY THE NEGLIGENCE OF THE RELEASEES NAMED BELOW.",
+    },
+    {
+      id: "governing-law",
+      body: "This Agreement shall be governed by the laws of Florida. Any legal action relating to or arising out of this agreement against or with respect to the assured shall be commenced exclusively in Florida. Any legal action relating to or arising out of this Agreement against or with respect to any of its DJ YOUSSEF LLC affiliated or related companies shall be commenced exclusively in the Circuit Court in and for Miami-Dade County, Florida. I agree that I will reimburse in full any attorney fees incurred by the assured or their insurers to defend any legal action under this agreement.",
+    },
+    {
+      id: "release",
+      requiresInitials: true,
+      body: "I HEREBY RELEASE DJ YOUSSEF LLC, THEIR AFFILIATED AND RELATED COMPANIES, THEIR PRINCIPALS, DIRECTORS, OFFICERS, AGENTS, EMPLOYEES, AND VOLUNTEERS, THEIR INSURERS, AND EACH AND EVERY LANDOWNER, MUNICIPAL AND/OR GOVERNMENTAL AGENCY UPON WHOSE PROPERTY AND ACTIVITY IS CONDUCTED, AS WELL AS THEIR INSURERS, IF ANY, EACH AND EVERY CRUISELINE OR COMPANY WHO FACILITATED PARTICIPATION AND/OR PURCHASE OF TICKETS, OR FROM ANY AND ALL LIABILITY OF ANY NATURE FOR ANY AND ALL INJURY, PROPERTY LOSS OR DAMAGE (INCLUDING DEATH) TO ME OR MY MINOR CHILDREN AS WELL AS OTHER PERSONS AS A RESULT OF MY/OUR PARTICIPATION IN THE ACTIVITY, EVEN IF CAUSED BY MY NEGLIGENCE OR BY THE NEGLIGENCE OF ANY OF THE RELEASEES NAMED ABOVE, OR ANY OTHER PERSON (INCLUDING MYSELF).",
+    },
+    {
+      id: "final-acknowledgement",
+      requiresInitials: true,
+      body: "I have read this assumption and acknowledgement of risks and release of liability agreement. I understand fully that it is contractual in nature and binding upon me personally. I further understand that by signing this document I am waiving valuable legal rights including any and all rights I may have against the owner, the renter/charterer, the operator named above, or their employees, agents, servants or assigns. I FULLY AGREE IN CONSIDERATION FOR BEING ALLOWED TO PARTICIPATE IN THE CHARTER TO HOLD HARMLESS AND INDEMNIFY THE OWNER, THE OPERATOR NAMED ABOVE OR THEIR EMPLOYEES, AGENTS, SERVANTS OR ASSIGNS FOR ANY INJURY WHICH MAY BEFALL ME, MY MINOR CHILDREN OR THOSE CHILDREN FOR WHOM I AM LEGALLY RESPONSIBLE (INCLUDING DEATH).",
+    },
+  ],
+};
+
+export const GUEST_WAIVER: WaiverDoc = {
+  type: "guest",
+  entity: "G-NOMADS LLC",
+  title:
+    "CONTRACTUAL ASSUMPTION ACKNOWLEDGEMENT OF RISKS AND LIABILITY WAIVER AND RELEASE AGREEMENT",
+  intro:
+    "IN CONSIDERATION of being permitted to participate in the charter provided by G-NOMADS LLC for myself and/or any minor children for whom I am the legal parent/guardian or otherwise responsible, and for my/our heirs, personal representatives or assigns:",
+  sections: [
+    {
+      id: "acknowledgement-of-risks",
+      heading: "ACKNOWLEDGEMENT OF RISKS",
+      body: "I fully acknowledge that some, but not all of the risks of participating in the charter in which I am about to engage may include (1) wind shear, inclement weather, lightning, variances and extremes of wind, weather and temperature; (2) any sense of balance, physical condition, ability to operate equipment, swim and/or follow directions; (3) collision, capsizing, sinking or other hazard which result in wetness, injury, exposure to the elements, hypothermia, impact of the body upon the water, injection of water into my body orifices, and/or drowning; (4) the presence of insects and marine life forms; (5) equipment failure, operator error, transportation accidents; (6) heat or sun related injuries or illness, including sunburn, sunstroke or dehydration; (7) fatigue, chill, and/or dizziness which may diminish my/our reaction time and increase the risk of an accident; (8) slippery decks when wet; (9) and any other activities incidental to the charter. I specifically acknowledge I have been given instructions/training in the safe use of the type of equipment used during this charter to my complete satisfaction, and I am physically/mentally able to participate in the charter which I am about to engage.",
+    },
+    {
+      id: "assumption-of-risk",
+      heading: "CONTRACTUAL/EXPRESS ASSUMPTION OF RISK AND RESPONSIBILITY",
+      body: "I fully agree to assume all responsibility for all the risks of the charter to which I am about to engage, whether identified above or not (I FULLY UNDERSTAND THAT I UNDERTAKE EVEN THOSE RISKS ARISING OUT OF THE NEGLIGENCE OF THE RELEASEES NAMED BELOW). My/Our participation in the charter is completely voluntary. I assume full responsibility for myself and any of my minor children for whom I am responsible. This responsibility that I assume on my behalf and that of my minor children, or those children for whom I am legally responsible, extends to any bodily injury, accidents, illnesses, paralysis, death, loss of personal property and expenses thereof as a result of any accident which may occur while we participate in the activity. I COMPLETELY UNDERSTAND AND AGREE TO ACCEPT ALL RESPONSIBILITY ON BEHALF OF MYSELF AND MY MINOR CHILDREN, OR THOSE CHILDREN FOR WHOM I AM LEGALLY RESPONSIBLE, EVEN IF THESE INJURIES, DEATH, OR LOSS OF PERSONAL PROPERTY ARE CAUSED IN WHOLE OR IN PART BY THE NEGLIGENCE OF THE RELEASEES NAMED BELOW.",
+    },
+    {
+      id: "release",
+      body: "I HEREBY RELEASE G-NOMADS LLC, THEIR AFFILIATED AND RELATED COMPANIES, THEIR PRINCIPALS, DIRECTORS, OFFICERS, AGENTS, EMPLOYEES, AND VOLUNTEERS, THEIR INSURERS, AND EACH AND EVERY LANDOWNER, MUNICIPAL AND/OR GOVERNMENTAL AGENCY UPON WHOSE PROPERTY AND ACTIVITY IS CONDUCTED, AS WELL AS THEIR INSURERS, IF ANY, FROM ANY AND ALL LIABILITY OF ANY NATURE FOR ANY AND ALL INJURY OR DAMAGE (INCLUDING DEATH) TO ME OR MY MINOR CHILDREN AS WELL AS OTHER PERSONS AS A RESULT OF MY/OUR PARTICIPATION IN THE ACTIVITY, EVEN IF CAUSED BY MY NEGLIGENCE OR BY THE NEGLIGENCE OF ANY OF THE RELEASEES NAMED ABOVE, OR ANY OTHER PERSON (INCLUDING MYSELF).",
+    },
+    {
+      id: "final-acknowledgement",
+      body: "I have read this assumption and acknowledgement of risks and release of liability agreement. I understand fully that it is contractual in nature and binding upon me personally. I further understand that by signing this document I am waiving valuable legal rights including any and all rights I may have against the owner, the operator named above, or their employees, agents, servants or assigns. I FULLY AGREE IN CONSIDERATION FOR BEING ALLOWED TO PARTICIPATE IN THE CHARTER TO HOLD HARMLESS AND INDEMNIFY THE OWNER, THE OPERATOR NAMED ABOVE OR THEIR EMPLOYEES, AGENTS, SERVANTS OR ASSIGNS FOR ANY INJURY WHICH MAY BEFALL ME, MY MINOR CHILDREN OR THOSE CHILDREN FOR WHOM I AM LEGALLY RESPONSIBLE (INCLUDING DEATH). By signing this waiver, you acknowledge that you have read and agree to all of the above.",
+    },
+  ],
+};
+
+export function getWaiverDoc(type: WaiverDocType): WaiverDoc {
+  return type === "booker" ? BOOKER_WAIVER : GUEST_WAIVER;
+}
+
+export function initialSectionIds(doc: WaiverDoc): string[] {
+  return doc.sections.filter((s) => s.requiresInitials).map((s) => s.id);
+}
