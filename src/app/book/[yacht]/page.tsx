@@ -43,24 +43,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-navy/40 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <a
-              href="/"
-              className="font-heading text-2xl tracking-wider text-primary"
-            >
-              Hurry Up Slowly
-            </a>
-            <span className="text-sm tracking-wide text-muted">
-              Secure Booking
-            </span>
-          </div>
-        </div>
-      </div>
-
+    <main className="min-h-screen bg-background pt-20">
       {/* Progress Indicator */}
       <div className="border-b border-border bg-navy/20">
         <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
