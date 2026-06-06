@@ -22,7 +22,7 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-92/drone-sunset.jpg",
       "/yachts/leopard-92/cruising.jpg",
     ],
-    heroImage: "/yachts/leopard-92/hero.jpg",
+    heroImage: "/yachts/leopard-92/thumb.jpg",
     amenities: [
       "Onboard Jacuzzi",
       "Private club area with DJ booth",
@@ -98,7 +98,7 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-86/upper-deck.jpg",
       "/yachts/leopard-86/lounge.jpg",
     ],
-    heroImage: "/yachts/leopard-86/hero.jpg",
+    heroImage: "/yachts/leopard-86/thumb.jpg",
     amenities: [
       "Expansive flybridge with wet bar",
       "Bow sunpad lounge",
@@ -174,7 +174,7 @@ export const yachts: Yacht[] = [
       "/yachts/princess-v65/profile.jpg",
       "/yachts/princess-v65/cockpit.jpg",
     ],
-    heroImage: "/yachts/princess-v65/hero.jpg",
+    heroImage: "/yachts/princess-v65/thumb.jpg",
     amenities: [
       "Retractable hardtop",
       "Cockpit wet bar & grill",
@@ -247,7 +247,7 @@ export const yachts: Yacht[] = [
       "/yachts/nissi-82/master.jpg",
       "/yachts/nissi-82/exterior.jpg",
     ],
-    heroImage: "/yachts/nissi-82/hero.jpg",
+    heroImage: "/yachts/nissi-82/thumb.jpg",
     amenities: [
       "Expansive flybridge with sun pads",
       "Aft deck dining for 12",
@@ -324,7 +324,7 @@ export const yachts: Yacht[] = [
       "/yachts/cantius-45/aft-deck.jpg",
       "/yachts/cantius-45/head.jpg",
     ],
-    heroImage: "/yachts/cantius-45/hero.jpg",
+    heroImage: "/yachts/cantius-45/thumb.jpg",
     amenities: [
       "Retractable sunroof",
       "Fold-down bulwark windows",
