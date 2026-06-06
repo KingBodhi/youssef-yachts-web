@@ -250,7 +250,7 @@ export function YachtDetailClient({ yacht }: YachtDetailClientProps) {
                     </p>
                     <Link
                       href={`/book/${yacht.id}`}
-                      className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary-light"
+                      className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-center text-sm font-semibold text-[#0A0A0B] transition-colors hover:bg-primary-light"
                     >
                       Book Now
                     </Link>
@@ -259,7 +259,7 @@ export function YachtDetailClient({ yacht }: YachtDetailClientProps) {
 
                 {/* Full-Day */}
                 <div className="relative flex flex-col overflow-hidden rounded-2xl border-2 border-primary bg-surface shadow-lg shadow-primary/10">
-                  <div className="absolute right-3 top-3 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-white">
+                  <div className="absolute right-3 top-3 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-[#0A0A0B]">
                     Popular
                   </div>
                   <div className="flex items-center gap-3 border-b border-primary/20 bg-primary/5 p-5">
@@ -277,7 +277,7 @@ export function YachtDetailClient({ yacht }: YachtDetailClientProps) {
                     </p>
                     <Link
                       href={`/book/${yacht.id}`}
-                      className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary-light"
+                      className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-center text-sm font-semibold text-[#0A0A0B] transition-colors hover:bg-primary-light"
                     >
                       Book Now
                     </Link>
@@ -303,7 +303,7 @@ export function YachtDetailClient({ yacht }: YachtDetailClientProps) {
                       <p className="mt-1 text-xs text-muted">per day</p>
                       <Link
                         href={`/book/${yacht.id}`}
-                        className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary-light"
+                        className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-center text-sm font-semibold text-[#0A0A0B] transition-colors hover:bg-primary-light"
                       >
                         Book Now
                       </Link>
@@ -351,7 +351,7 @@ export function YachtDetailClient({ yacht }: YachtDetailClientProps) {
               <div className="mt-6 border-t border-border pt-6">
                 <Link
                   href={`/book/${yacht.id}`}
-                  className="block w-full rounded-xl bg-primary px-6 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary-light hover:shadow-primary-light/25"
+                  className="block w-full rounded-xl bg-primary px-6 py-3.5 text-center text-sm font-semibold text-[#0A0A0B] shadow-lg shadow-primary/25 transition-all hover:bg-primary-light hover:shadow-primary-light/25"
                 >
                   Book This Yacht
                 </Link>
@@ -389,7 +389,7 @@ export function YachtDetailClient({ yacht }: YachtDetailClientProps) {
             </div>
             <Link
               href={`/book/${yacht.id}`}
-              className="rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary-light"
+              className="rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-[#0A0A0B] shadow-lg shadow-primary/25 transition-all hover:bg-primary-light"
             >
               Book This Yacht
             </Link>

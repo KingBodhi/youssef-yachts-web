@@ -338,7 +338,7 @@ export default function AboutPage() {
             >
               <a
                 href="/contact"
-                className="inline-flex h-13 items-center justify-center rounded-sm bg-primary px-8 text-base font-medium uppercase tracking-wide text-white shadow-md transition-all duration-300 hover:bg-primary-light hover:shadow-lg hover:shadow-primary/20"
+                className="inline-flex h-13 items-center justify-center rounded-sm bg-primary px-8 text-base font-medium uppercase tracking-wide text-[#0A0A0B] shadow-md transition-all duration-300 hover:bg-primary-light hover:shadow-lg hover:shadow-black/30"
               >
                 Contact Us
               </a>

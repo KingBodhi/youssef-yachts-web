@@ -27,11 +27,23 @@ export function HeroSection() {
         "bg-gradient-to-br from-[#08080A] via-[#0E0E11] to-[#17171B]"
       )}
     >
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-      </div>
+      {/* Background drone video */}
+      <video
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        poster="/video/hero-poster.jpg"
+      >
+        <source src="/video/hero.mp4" type="video/mp4" />
+      </video>
+
+      {/* Legibility overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#08080A]/75 via-[#08080A]/50 to-[#08080A]" />
+      <div className="pointer-events-none absolute inset-0 bg-[#08080A]/20" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
         <motion.p
@@ -77,8 +89,8 @@ export function HeroSection() {
             href="/fleet"
             className={cn(
               "inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8",
-              "font-body text-sm font-semibold text-white",
-              "shadow-lg shadow-primary/25 hover:bg-primary-light hover:shadow-primary-light/25",
+              "font-body text-sm font-semibold text-[#0A0A0B]",
+              "shadow-lg shadow-black/30 hover:bg-primary-light",
               "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             )}
           >

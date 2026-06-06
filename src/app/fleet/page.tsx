@@ -93,7 +93,7 @@ export default function FleetPage() {
               className={cn(
                 "rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-200",
                 activeFilter === filter.id
-                  ? "bg-primary text-white shadow-lg shadow-primary/25"
+                  ? "bg-primary text-[#0A0A0B] shadow-lg shadow-primary/25"
                   : "border border-border bg-surface text-muted hover:border-primary/40 hover:text-foreground"
               )}
             >
@@ -129,7 +129,7 @@ export default function FleetPage() {
                     />
 
                     {/* Price Badge */}
-                    <div className="absolute right-4 top-4 rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-white shadow-lg">
+                    <div className="absolute right-4 top-4 rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-[#0A0A0B] shadow-lg">
                       From {formatCurrency(yacht.pricing.halfDay)}
                     </div>
 

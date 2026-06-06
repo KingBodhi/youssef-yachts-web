@@ -335,7 +335,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-300",
                   s < step
-                    ? "border-primary bg-primary text-white"
+                    ? "border-primary bg-primary text-[#0A0A0B]"
                     : s === step
                       ? "border-primary text-primary"
                       : "border-white/10 text-white/30"
@@ -567,7 +567,7 @@ function StepDateTime({
                         : "border-white/20 bg-transparent"
                     )}
                   >
-                    {isActive && <Check className="h-3 w-3 text-white" />}
+                    {isActive && <Check className="h-3 w-3 text-[#0A0A0B]" />}
                   </div>
                 </div>
                 <p className="mt-3 text-xs text-muted">{type.description}</p>
@@ -801,7 +801,7 @@ function StepCustomize({
                     : "border-white/20 bg-transparent"
                 )}
               >
-                {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+                {isSelected && <Check className="h-3.5 w-3.5 text-[#0A0A0B]" />}
               </div>
 
               <div className="flex items-start gap-4">

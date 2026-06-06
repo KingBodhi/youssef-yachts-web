@@ -101,7 +101,7 @@ export function FleetPreview() {
 
                   {/* Hover overlay */}
                   <div className="absolute inset-0 flex items-center justify-center bg-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <span className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-lg">
+                    <span className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-[#0A0A0B] shadow-lg">
                       View Details
                       <ArrowRight className="h-4 w-4" />
                     </span>
