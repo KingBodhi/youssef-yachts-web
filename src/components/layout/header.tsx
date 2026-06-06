@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Phone } from "lucide-react";
 import { BRAND, NAV_LINKS } from "@/lib/constants";
@@ -39,7 +40,7 @@ export function Header() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out",
           isScrolled
-            ? "bg-[#030712]/90 backdrop-blur-xl border-b border-[#006DB0]/10 shadow-lg shadow-black/20"
+            ? "bg-[#08080A]/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/30"
             : "bg-transparent"
         )}
       >
@@ -51,8 +52,16 @@ export function Header() {
               className="group relative z-10 flex items-center gap-3"
               aria-label={BRAND.name}
             >
-              <span className="font-heading text-2xl font-bold tracking-[0.2em] text-[#006DB0] transition-colors duration-300 group-hover:text-[#1A8FD8]">
-                YOUSEF YACHTS
+              <Image
+                src="/brand/hus-icon.png"
+                alt=""
+                width={40}
+                height={30}
+                priority
+                className="h-8 w-auto transition-opacity duration-300 group-hover:opacity-80"
+              />
+              <span className="font-body text-sm font-semibold uppercase tracking-[0.32em] text-white transition-opacity duration-300 group-hover:opacity-80">
+                Hurry Up Slowly
               </span>
             </Link>
 
@@ -62,7 +71,7 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative px-4 py-2 text-sm font-medium tracking-wide text-white/70 transition-colors duration-300 hover:text-white after:absolute after:bottom-0 after:left-1/2 after:h-[1px] after:w-0 after:bg-[#006DB0] after:transition-all after:duration-300 after:-translate-x-1/2 hover:after:w-2/3"
+                  className="relative px-4 py-2 text-sm font-medium tracking-wide text-white/70 transition-colors duration-300 hover:text-white after:absolute after:bottom-0 after:left-1/2 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 after:-translate-x-1/2 hover:after:w-2/3"
                 >
                   {link.label}
                 </Link>
@@ -73,7 +82,7 @@ export function Header() {
             <div className="hidden items-center gap-4 lg:flex">
               <a
                 href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
-                className="flex items-center gap-2 text-sm text-white/60 transition-colors duration-300 hover:text-[#006DB0]"
+                className="flex items-center gap-2 text-sm text-white/60 transition-colors duration-300 hover:text-white"
               >
                 <Phone className="h-4 w-4" />
                 <span className="hidden xl:inline">{BRAND.phone}</span>
@@ -87,7 +96,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="relative z-10 flex h-10 w-10 items-center justify-center rounded-sm text-white transition-colors duration-300 hover:text-[#006DB0] lg:hidden"
+              className="relative z-10 flex h-10 w-10 items-center justify-center rounded-sm text-white transition-colors duration-300 hover:text-white lg:hidden"
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}
             >
@@ -122,13 +131,22 @@ export function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm bg-[#030712] border-l border-[#006DB0]/10 shadow-2xl lg:hidden"
+              className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm bg-[#08080A] border-l border-white/10 shadow-2xl lg:hidden"
             >
               <div className="flex h-full flex-col">
                 {/* Drawer Header */}
                 <div className="flex h-20 items-center justify-between px-6 border-b border-white/5">
-                  <span className="font-heading text-xl font-bold tracking-[0.2em] text-[#006DB0]">
-                    YOUSEF YACHTS
+                  <span className="flex items-center gap-2.5">
+                    <Image
+                      src="/brand/hus-icon.png"
+                      alt=""
+                      width={32}
+                      height={24}
+                      className="h-7 w-auto"
+                    />
+                    <span className="font-body text-xs font-semibold uppercase tracking-[0.28em] text-white">
+                      Hurry Up Slowly
+                    </span>
                   </span>
                   <button
                     type="button"
@@ -153,7 +171,7 @@ export function Header() {
                         <Link
                           href={link.href}
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className="block py-3 text-lg font-medium tracking-wide text-white/80 transition-colors duration-300 hover:text-[#006DB0] border-b border-white/5"
+                          className="block py-3 text-lg font-medium tracking-wide text-white/80 transition-colors duration-300 hover:text-white border-b border-white/5"
                         >
                           {link.label}
                         </Link>
@@ -166,7 +184,7 @@ export function Header() {
                 <div className="border-t border-white/5 px-6 py-6 space-y-4">
                   <a
                     href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
-                    className="flex items-center gap-3 text-sm text-white/60 transition-colors hover:text-[#006DB0]"
+                    className="flex items-center gap-3 text-sm text-white/60 transition-colors hover:text-white"
                   >
                     <Phone className="h-4 w-4" />
                     {BRAND.phone}

@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "Youssef Yachts",
+  name: "Hurry Up Slowly",
   tagline: "Miami's Elite Yacht Charter Experience",
   description:
     "Premier luxury yacht charters in Miami. Handpicked vessels, professional crew, world-class service on Biscayne Bay, Star Island, and beyond.",

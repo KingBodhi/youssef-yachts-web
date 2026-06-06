@@ -91,7 +91,7 @@ function WaiverForm() {
 
       if (res.status === 403) {
         setSubmitError(
-          "This signing link is invalid or has expired. Please request a new link from Youssef Yachts."
+          "This signing link is invalid or has expired. Please request a new link from Hurry Up Slowly."
         );
         return;
       }

@@ -67,8 +67,8 @@ export default function AdminDashboard() {
       label: "Total Bookings",
       value: totalBookings,
       icon: CalendarCheck,
-      color: "text-[#006DB0]",
-      bg: "bg-[#006DB0]/15",
+      color: "text-[#E9E9EC]",
+      bg: "bg-[#E9E9EC]/15",
     },
     {
       label: "Confirmed",
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl border border-white/10 bg-[#0d1b30] p-6"
+            className="rounded-xl border border-white/10 bg-[#161618] p-6"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Bookings Table */}
-      <div className="rounded-xl border border-white/10 bg-[#0d1b30]">
+      <div className="rounded-xl border border-white/10 bg-[#161618]">
         <div className="border-b border-white/10 px-6 py-4">
           <h2 className="text-lg font-semibold text-white">Recent Bookings</h2>
           <p className="text-sm text-gray-400">

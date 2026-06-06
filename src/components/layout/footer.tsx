@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { BRAND } from "@/lib/constants";
 
@@ -72,19 +73,23 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-[#030712] border-t border-[#006DB0]/10">
-      {/* Blue Accent Divider */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#006DB0]/40 to-transparent" />
+    <footer className="relative bg-[#08080A] border-t border-white/10">
+      {/* Accent Divider */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 gap-12 py-16 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-4">
-            <Link href="/" className="inline-block">
-              <span className="font-heading text-2xl font-bold tracking-[0.2em] text-[#006DB0]">
-                YOUSEF YACHTS
-              </span>
+            <Link href="/" className="inline-block" aria-label={BRAND.name}>
+              <Image
+                src="/brand/hus-wordmark.png"
+                alt={BRAND.name}
+                width={200}
+                height={106}
+                className="h-20 w-auto"
+              />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/50">
               {BRAND.tagline}
@@ -97,20 +102,20 @@ export function Footer() {
             <div className="mt-8 space-y-3">
               <a
                 href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
-                className="flex items-center gap-3 text-sm text-white/50 transition-colors duration-300 hover:text-[#006DB0]"
+                className="flex items-center gap-3 text-sm text-white/50 transition-colors duration-300 hover:text-white"
               >
-                <Phone className="h-4 w-4 shrink-0 text-[#006DB0]/60" />
+                <Phone className="h-4 w-4 shrink-0 text-white/40" />
                 {BRAND.phone}
               </a>
               <a
                 href={`mailto:${BRAND.email}`}
-                className="flex items-center gap-3 text-sm text-white/50 transition-colors duration-300 hover:text-[#006DB0]"
+                className="flex items-center gap-3 text-sm text-white/50 transition-colors duration-300 hover:text-white"
               >
-                <Mail className="h-4 w-4 shrink-0 text-[#006DB0]/60" />
+                <Mail className="h-4 w-4 shrink-0 text-white/40" />
                 {BRAND.email}
               </a>
               <div className="flex items-start gap-3 text-sm text-white/50">
-                <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-[#006DB0]/60" />
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-white/40" />
                 {BRAND.address}
               </div>
             </div>
@@ -126,7 +131,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/40 transition-colors duration-300 hover:text-[#006DB0]"
+                    className="text-sm text-white/40 transition-colors duration-300 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -145,7 +150,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/40 transition-colors duration-300 hover:text-[#006DB0]"
+                    className="text-sm text-white/40 transition-colors duration-300 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -168,7 +173,7 @@ export function Footer() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-sm text-white/40 transition-colors duration-300 hover:text-[#006DB0]"
+                      className="flex items-center gap-3 text-sm text-white/40 transition-colors duration-300 hover:text-white"
                     >
                       <Icon className="h-4 w-4" />
                       {link.label}
@@ -188,7 +193,7 @@ export function Footer() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-white/10 text-white/40 transition-all duration-300 hover:border-[#006DB0]/40 hover:text-[#006DB0] hover:bg-[#006DB0]/5"
+                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-white/10 text-white/40 transition-all duration-300 hover:border-white/40 hover:text-white hover:bg-white/5"
                     aria-label={`Follow us on ${link.label}`}
                   >
                     <Icon className="h-4 w-4" />

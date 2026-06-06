@@ -20,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Yousef Yachts | Miami's Elite Yacht Charter",
+  title: "Hurry Up Slowly | Miami Yacht Charter",
   description: BRAND.description,
   keywords: [
     "yacht charter Miami",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "party yacht Miami",
   ],
   openGraph: {
-    title: "Yousef Yachts | Miami's Elite Yacht Charter",
+    title: "Hurry Up Slowly | Miami Yacht Charter",
     description: BRAND.description,
     siteName: BRAND.name,
     locale: "en_US",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Yousef Yachts | Miami's Elite Yacht Charter",
+    title: "Hurry Up Slowly | Miami Yacht Charter",
     description: BRAND.description,
   },
   robots: { index: true, follow: true },

@@ -38,21 +38,21 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0a1628] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#08080A] px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#006DB0]/20">
-            <Anchor className="h-8 w-8 text-[#006DB0]" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#E9E9EC]/20">
+            <Anchor className="h-8 w-8 text-[#E9E9EC]" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white">Yousef Yachts</h1>
+            <h1 className="text-2xl font-bold text-white">Hurry Up Slowly</h1>
             <p className="mt-1 text-sm text-gray-400">Admin Panel</p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-[#0d1b30] p-8 shadow-2xl">
+        <div className="rounded-2xl border border-white/10 bg-[#161618] p-8 shadow-2xl">
           <h2 className="mb-1 text-xl font-semibold text-white">Sign In</h2>
           <p className="mb-6 text-sm text-gray-400">
             Enter your credentials to access the admin dashboard.
@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@yousefyachts.com"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#006DB0] focus:ring-1 focus:ring-[#006DB0]"
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#E9E9EC] focus:ring-1 focus:ring-[#E9E9EC]"
               />
             </div>
 
@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 pr-10 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#006DB0] focus:ring-1 focus:ring-[#006DB0]"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 pr-10 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#E9E9EC] focus:ring-1 focus:ring-[#E9E9EC]"
                 />
                 <button
                   type="button"
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-[#006DB0] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#005a91] disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#0A0A0B] transition hover:bg-[#C4C4CB] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -118,7 +118,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-600">
-          Yousef Yachts Admin &mdash; Authorized personnel only.
+          Hurry Up Slowly Admin &mdash; Authorized personnel only.
         </p>
       </div>
     </div>

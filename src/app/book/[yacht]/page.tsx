@@ -18,11 +18,11 @@ export async function generateMetadata({
   const yacht = getYachtBySlug(slug);
 
   if (!yacht) {
-    return { title: "Yacht Not Found | Yousef Yachts" };
+    return { title: "Yacht Not Found | Hurry Up Slowly" };
   }
 
   return {
-    title: `Book ${yacht.name} | Yousef Yachts`,
+    title: `Book ${yacht.name} | Hurry Up Slowly`,
     description: `Reserve the ${yacht.name} for your luxury charter experience in Miami. Capacity: ${yacht.capacity} guests.`,
   };
 }
@@ -52,7 +52,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
               href="/"
               className="font-heading text-2xl tracking-wider text-primary"
             >
-              Yousef Yachts
+              Hurry Up Slowly
             </a>
             <span className="text-sm tracking-wide text-muted">
               Secure Booking

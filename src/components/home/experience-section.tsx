@@ -72,10 +72,10 @@ export function ExperienceSection() {
           className="mx-auto max-w-2xl text-center"
         >
           <p className="text-sm font-medium uppercase tracking-[0.25em] text-primary-light">
-            The Yousef Yachts Difference
+            The Hurry Up Slowly Difference
           </p>
           <h2 className="mt-3 font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Why Yousef Yachts
+            Why Hurry Up Slowly
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
             We built our reputation on three principles that guide every charter.

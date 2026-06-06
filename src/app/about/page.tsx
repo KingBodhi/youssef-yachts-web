@@ -74,7 +74,7 @@ export default function AboutPage() {
               className="font-heading text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
             >
               About{" "}
-              <span className="text-brand-gradient">Yousef Yachts</span>
+              <span className="text-brand-gradient">Hurry Up Slowly</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
@@ -321,7 +321,7 @@ export default function AboutPage() {
               className="font-heading text-3xl font-bold text-foreground sm:text-4xl"
             >
               Ready to Experience the{" "}
-              <span className="text-primary">Yousef Yachts</span> Difference?
+              <span className="text-primary">Hurry Up Slowly</span> Difference?
             </motion.h2>
             <motion.p
               variants={fadeUp}

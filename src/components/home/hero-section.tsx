@@ -24,7 +24,7 @@ export function HeroSection() {
       ref={ref}
       className={cn(
         "relative flex min-h-screen items-center justify-center overflow-hidden",
-        "bg-gradient-to-br from-[#030B18] via-[#071426] to-[#0E2240]"
+        "bg-gradient-to-br from-[#08080A] via-[#0E0E11] to-[#17171B]"
       )}
     >
       {/* Ambient glow */}

@@ -15,7 +15,7 @@ const testimonials = [
   {
     name: "Jessica T.",
     occasion: "Corporate Event",
-    body: "Our firm needed a venue for 25 clients and the 92-foot Leopard was absolutely perfect. The jacuzzi, the club area, the sound system -- our guests are still talking about it weeks later. The Yousef Yachts team handled every detail so we could focus on our clients.",
+    body: "Our firm needed a venue for 25 clients and the 92-foot Leopard was absolutely perfect. The jacuzzi, the club area, the sound system -- our guests are still talking about it weeks later. The Hurry Up Slowly team handled every detail so we could focus on our clients.",
     rating: 5,
   },
   {

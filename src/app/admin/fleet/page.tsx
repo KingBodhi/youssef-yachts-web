@@ -83,7 +83,7 @@ export default function AdminFleetPage() {
         </div>
         <button
           onClick={showComingSoon}
-          className="flex items-center gap-2 rounded-lg bg-[#006DB0] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#005a91]"
+          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#0A0A0B] transition hover:bg-[#C4C4CB]"
         >
           <Plus className="h-4 w-4" />
           Add Yacht
@@ -99,12 +99,12 @@ export default function AdminFleetPage() {
           return (
             <div
               key={yacht.id}
-              className="rounded-xl border border-white/10 bg-[#0d1b30] overflow-hidden"
+              className="rounded-xl border border-white/10 bg-[#161618] overflow-hidden"
             >
               {/* Card Header */}
               <div className="flex items-start justify-between border-b border-white/5 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#006DB0]/15">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#E9E9EC]/15">
                     <Image
                       src={yacht.heroImage}
                       alt={yacht.name}
@@ -236,7 +236,7 @@ export default function AdminFleetPage() {
 
       {/* Coming Soon Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-[300] animate-in fade-in slide-in-from-bottom-4 rounded-lg border border-white/10 bg-[#0d1b30] px-6 py-3 shadow-xl">
+        <div className="fixed bottom-6 right-6 z-[300] animate-in fade-in slide-in-from-bottom-4 rounded-lg border border-white/10 bg-[#161618] px-6 py-3 shadow-xl">
           <p className="text-sm font-medium text-white">
             Coming Soon
           </p>

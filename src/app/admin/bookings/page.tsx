@@ -222,7 +222,7 @@ export default function AdminBookingsPage() {
             onClick={() => setFilter(tab.value)}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               filter === tab.value
-                ? "bg-[#006DB0] text-white"
+                ? "bg-white text-[#0A0A0B]"
                 : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
             }`}
           >
@@ -246,7 +246,7 @@ export default function AdminBookingsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by customer name or booking ID..."
-          className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#006DB0]"
+          className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#E9E9EC]"
         />
         {search && (
           <button
@@ -259,7 +259,7 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-white/10 bg-[#0d1b30]">
+      <div className="rounded-xl border border-white/10 bg-[#161618]">
         {filtered.length === 0 ? (
           <div className="px-6 py-12 text-center text-gray-500">
             {bookings.length === 0
@@ -383,7 +383,7 @@ export default function AdminBookingsPage() {
                                 className="fixed inset-0 z-10"
                                 onClick={() => setOpenActionsId(null)}
                               />
-                              <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-white/10 bg-[#0d1b30] py-1 shadow-xl">
+                              <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-white/10 bg-[#161618] py-1 shadow-xl">
                                 {booking.status !== "confirmed" &&
                                   booking.status !== "cancelled" &&
                                   booking.status !== "completed" && (
@@ -463,9 +463,9 @@ export default function AdminBookingsPage() {
       {/* Booking Detail Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4">
-          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-[#0d1b30] p-0 shadow-2xl">
+          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-[#161618] p-0 shadow-2xl">
             {/* Modal Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#0d1b30] px-6 py-4">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#161618] px-6 py-4">
               <div>
                 <h3 className="text-lg font-semibold text-white">
                   Booking Details
@@ -611,7 +611,7 @@ export default function AdminBookingsPage() {
                   <div className="border-t border-white/10 pt-2">
                     <div className="flex justify-between text-sm font-semibold">
                       <span className="text-white">Total</span>
-                      <span className="text-[#006DB0]">
+                      <span className="text-[#E9E9EC]">
                         {formatCurrency(selectedBooking.pricing.total)}
                       </span>
                     </div>
@@ -645,7 +645,7 @@ export default function AdminBookingsPage() {
 
                 {/* Shareable signing link */}
                 <div className="mb-3 flex items-center gap-2 rounded-lg bg-white/5 p-3">
-                  <Link2 className="h-4 w-4 shrink-0 text-[#006DB0]" />
+                  <Link2 className="h-4 w-4 shrink-0 text-[#E9E9EC]" />
                   <input
                     readOnly
                     value={signingLink}
@@ -655,7 +655,7 @@ export default function AdminBookingsPage() {
                   <button
                     onClick={copySigningLink}
                     disabled={!signingLink}
-                    className="flex items-center gap-1 rounded-md bg-[#006DB0]/20 px-2.5 py-1 text-xs font-medium text-[#006DB0] transition hover:bg-[#006DB0]/30 disabled:opacity-50"
+                    className="flex items-center gap-1 rounded-md bg-[#E9E9EC]/20 px-2.5 py-1 text-xs font-medium text-[#E9E9EC] transition hover:bg-[#E9E9EC]/30 disabled:opacity-50"
                   >
                     <Copy className="h-3 w-3" />
                     {linkCopied ? "Copied" : "Copy"}
@@ -718,7 +718,7 @@ export default function AdminBookingsPage() {
                   onChange={(e) => setModalNotes(e.target.value)}
                   rows={3}
                   placeholder="Add notes about this booking..."
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#006DB0]"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#E9E9EC]"
                 />
                 <button
                   onClick={handleSaveNotes}

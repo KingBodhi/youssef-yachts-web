@@ -62,30 +62,30 @@ export default function AdminLayout({
   // Login page renders without the admin chrome
   if (pathname === "/admin/login") {
     return (
-      <div className="fixed inset-0 z-[100] bg-[#0a1628]">{children}</div>
+      <div className="fixed inset-0 z-[100] bg-[#08080A]">{children}</div>
     );
   }
 
   if (authenticated === null) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a1628]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#006DB0] border-t-transparent" />
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#08080A]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E9E9EC] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex bg-[#0a1628] text-gray-100">
+    <div className="fixed inset-0 z-[100] flex bg-[#08080A] text-gray-100">
       {/* Sidebar */}
-      <aside className="flex w-[280px] shrink-0 flex-col border-r border-white/10 bg-[#060f1f]">
+      <aside className="flex w-[280px] shrink-0 flex-col border-r border-white/10 bg-[#0a0a0c]">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-white/10 px-6">
-          <Anchor className="h-7 w-7 text-[#006DB0]" />
+          <Anchor className="h-7 w-7 text-[#E9E9EC]" />
           <div>
             <span className="text-lg font-bold tracking-tight text-white">
-              Yousef Yachts
+              Hurry Up Slowly
             </span>
-            <span className="ml-2 rounded bg-[#006DB0]/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#006DB0]">
+            <span className="ml-2 rounded bg-[#E9E9EC]/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#E9E9EC]">
               Admin
             </span>
           </div>
@@ -103,7 +103,7 @@ export default function AdminLayout({
                 href={item.href}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-[#006DB0]/15 text-[#006DB0]"
+                    ? "bg-[#E9E9EC]/15 text-[#E9E9EC]"
                     : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                 }`}
               >
@@ -138,7 +138,7 @@ export default function AdminLayout({
             )?.label ?? "Dashboard"}
           </h1>
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-[#006DB0]/30 flex items-center justify-center text-sm font-bold text-[#006DB0]">
+            <div className="h-8 w-8 rounded-full bg-[#E9E9EC]/30 flex items-center justify-center text-sm font-bold text-[#E9E9EC]">
               A
             </div>
             <span className="text-sm text-gray-300">Admin</span>

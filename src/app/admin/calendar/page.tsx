@@ -130,13 +130,13 @@ export default function AdminCalendarPage() {
           <select
             value={selectedYacht}
             onChange={(e) => setSelectedYacht(e.target.value)}
-            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none transition focus:border-[#006DB0]"
+            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none transition focus:border-[#E9E9EC]"
           >
-            <option value="all" className="bg-[#0d1b30]">
+            <option value="all" className="bg-[#161618]">
               All Yachts
             </option>
             {yachts.map((y) => (
-              <option key={y.id} value={y.id} className="bg-[#0d1b30]">
+              <option key={y.id} value={y.id} className="bg-[#161618]">
                 {y.name}
               </option>
             ))}
@@ -144,7 +144,7 @@ export default function AdminCalendarPage() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="rounded-xl border border-white/10 bg-[#0d1b30] overflow-hidden">
+        <div className="rounded-xl border border-white/10 bg-[#161618] overflow-hidden">
           {/* Weekday Headers */}
           <div className="grid grid-cols-7 border-b border-white/5">
             {WEEKDAYS.map((day) => (
@@ -172,12 +172,12 @@ export default function AdminCalendarPage() {
                   onClick={() => setSelectedDate(day)}
                   className={`relative min-h-[100px] border-b border-r border-white/5 p-2 text-left transition hover:bg-white/[0.03] ${
                     !inMonth ? "opacity-30" : ""
-                  } ${isSelected ? "bg-[#006DB0]/10 ring-1 ring-inset ring-[#006DB0]/30" : ""}`}
+                  } ${isSelected ? "bg-[#E9E9EC]/10 ring-1 ring-inset ring-[#E9E9EC]/30" : ""}`}
                 >
                   <span
                     className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm ${
                       today
-                        ? "bg-[#006DB0] font-bold text-white"
+                        ? "bg-white font-bold text-[#0A0A0B]"
                         : "text-gray-300"
                     }`}
                   >
@@ -230,7 +230,7 @@ export default function AdminCalendarPage() {
 
       {/* Side Panel - Day Detail */}
       <div className="w-[340px] shrink-0">
-        <div className="sticky top-0 rounded-xl border border-white/10 bg-[#0d1b30]">
+        <div className="sticky top-0 rounded-xl border border-white/10 bg-[#161618]">
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <h3 className="text-sm font-semibold text-white">
               {selectedDate

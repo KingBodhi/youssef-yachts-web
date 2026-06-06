@@ -22,9 +22,9 @@ export function CtaSection() {
 
   return (
     <section ref={ref} className="relative overflow-hidden">
-      {/* Blue gradient background */}
+      {/* Onyx gradient background */}
       <div className="absolute inset-0 bg-brand-gradient" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,191,255,0.15),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.06),transparent_60%)]" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 py-24 text-center sm:py-32">
         <motion.p
@@ -69,7 +69,7 @@ export function CtaSection() {
             href="/contact"
             className={cn(
               "inline-flex h-12 items-center justify-center rounded-lg bg-white px-8",
-              "text-sm font-semibold text-[#005A91]",
+              "text-sm font-semibold text-[#0A0A0B]",
               "shadow-lg shadow-black/20 hover:bg-white/90",
               "focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
             )}
