@@ -5,25 +5,38 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * The single CTA treatment for the whole site. Before this pass the hero,
+ * about page, FAQ, homepage CTA and yacht detail each hand-rolled their own
+ * anchor with a different radius (sm, lg, xl), a different height and a
+ * different hover. Everything routes through here now.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-sm font-medium tracking-wide uppercase transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E9E9EC] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08080A] disabled:pointer-events-none disabled:opacity-50",
+  [
+    "sheen-parent inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full",
+    "font-body font-semibold uppercase tracking-[0.12em]",
+    "transition-[transform,background-color,border-color,color,box-shadow] duration-300 ease-out",
+    "hover:-translate-y-0.5 active:translate-y-0",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0",
+  ].join(" "),
   {
     variants: {
       variant: {
         default:
-          "bg-[#E9E9EC] text-[#0A0A0B] hover:bg-white active:bg-[#C4C4CB] shadow-md hover:shadow-lg hover:shadow-white/10",
+          "bg-primary text-[#0A0A0B] shadow-lg shadow-black/30 hover:bg-primary-light hover:shadow-xl hover:shadow-white/10",
         outline:
-          "border border-white/25 bg-transparent text-white hover:bg-white/10 active:bg-white/20",
+          "border border-white/25 bg-transparent text-white hover:border-white/60 hover:bg-white/10",
         ghost:
-          "bg-transparent text-white hover:bg-white/5 active:bg-white/10",
+          "bg-transparent text-white hover:bg-white/5",
         link:
-          "bg-transparent text-white underline-offset-4 hover:underline",
+          "rounded-none bg-transparent px-0 text-primary-light normal-case tracking-normal underline-offset-4 hover:translate-y-0 hover:text-white hover:underline",
       },
       size: {
-        sm: "h-9 px-4 text-xs",
-        default: "h-11 px-6 text-sm",
-        lg: "h-13 px-8 text-base",
-        icon: "h-10 w-10",
+        sm: "h-9 px-5 text-[11px]",
+        default: "h-11 px-7 text-xs sm:text-sm",
+        lg: "h-13 px-9 text-sm",
+        icon: "h-10 w-10 px-0",
       },
     },
     defaultVariants: {

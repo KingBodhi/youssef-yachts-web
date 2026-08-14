@@ -1,5 +1,19 @@
 import { Yacht } from "@/lib/types";
 
+/**
+ * Every yacht presents the same amount of content. These are the counts, and
+ * `assertFleetUniformity()` below enforces them at module load in development
+ * so a future edit cannot quietly reintroduce the drift this fixes: before
+ * this pass, galleries ranged from 6 to 12 images and amenity lists from 10
+ * to 12, which made the fleet look unevenly documented.
+ */
+export const FLEET_SHAPE = {
+  images: 6,
+  amenities: 10,
+  includes: 6,
+  features: 4,
+} as const;
+
 export const yachts: Yacht[] = [
   {
     id: "leopard-92",
@@ -15,14 +29,14 @@ export const yachts: Yacht[] = [
     builder: "Leopard",
     year: 2021,
     images: [
-      "/yachts/leopard-92/hero.jpg",
-      "/yachts/leopard-92/club.jpg",
-      "/yachts/leopard-92/sunset.jpg",
-      "/yachts/leopard-92/aerial.jpg",
-      "/yachts/leopard-92/drone-sunset.jpg",
-      "/yachts/leopard-92/cruising.jpg",
+      "/yachts/leopard-92/01.jpg",
+      "/yachts/leopard-92/02.jpg",
+      "/yachts/leopard-92/03.jpg",
+      "/yachts/leopard-92/04.jpg",
+      "/yachts/leopard-92/05.jpg",
+      "/yachts/leopard-92/06.jpg",
     ],
-    heroImage: "/yachts/leopard-92/thumb.jpg",
+    thumbnail: "/yachts/leopard-92/thumb.jpg",
     amenities: [
       "Onboard Jacuzzi",
       "Private club area with DJ booth",
@@ -33,8 +47,6 @@ export const yachts: Yacht[] = [
       "Full commercial galley",
       "VIP master suite",
       "Multiple bar stations",
-      "Water toys storage",
-      "Stabilizers at anchor",
       "Satellite TV & entertainment",
     ],
     includes: [
@@ -73,7 +85,80 @@ export const yachts: Yacht[] = [
       "Club area with dance floor",
       "Professional DJ booth & lighting",
       "Three deck levels",
-      "Dual bar stations",
+    ],
+    status: "active",
+  },
+  // NOTE: specs & pricing PRELIMINARY. Confirm real values with owner.
+  {
+    id: "leopard-92-zen",
+    slug: "leopard-92-zen",
+    name: "92' Leopard \"Zen\"",
+    tagline: "Timeless Luxury, Effortless Cruising",
+    description:
+      "The 92-foot Leopard Zen is refined cruising at its finest. Three elegant staterooms finished in warm teak joinery, a light-filled main salon, and an extended sun deck create a sense of calm the moment you step aboard. Twin MTU engines carry her effortlessly across Biscayne Bay, while a full swim platform and an onboard jet ski turn every sandbar stop into an afternoon to remember. She hosts up to 12 guests in comfort for the day and sleeps six for overnight voyages to the Keys and the Bahamas.",
+    length: 92,
+    capacity: 12,
+    cabins: 3,
+    crew: 3,
+    builder: "Leopard",
+    year: 2003,
+    images: [
+      "/yachts/leopard-92-zen/01.jpg",
+      "/yachts/leopard-92-zen/02.jpg",
+      "/yachts/leopard-92-zen/03.jpg",
+      "/yachts/leopard-92-zen/04.jpg",
+      "/yachts/leopard-92-zen/05.jpg",
+      "/yachts/leopard-92-zen/06.jpg",
+    ],
+    thumbnail: "/yachts/leopard-92-zen/thumb.jpg",
+    amenities: [
+      "Three en-suite staterooms",
+      "Warm teak interior joinery",
+      "Extended sun deck lounge",
+      "Onboard jet ski",
+      "Hydraulic swim platform",
+      "Full galley with wine cooler",
+      "Twin MTU power",
+      "Satellite TV & entertainment",
+      "Premium sound system",
+      "Al fresco deck dining",
+    ],
+    includes: [
+      "Captain & professional crew",
+      "Fuel",
+      "Ice, water & soft drinks",
+      "Bluetooth audio",
+      "Snorkeling gear",
+      "Beach towels",
+    ],
+    pricing: { halfDay: 7000, fullDay: 12000, multiDayPerDay: 10000, currency: "USD" },
+    availability: {
+      operatingHours: { start: "08:00", end: "22:00" },
+      blackoutDates: [],
+      slots: [],
+    },
+    location: {
+      marina: "Miami Beach Marina",
+      address: "300 Alton Road",
+      city: "Miami Beach",
+      state: "FL",
+      lat: 25.7701,
+      lng: -80.1425,
+      dockNumber: "D-10",
+    },
+    specs: {
+      length: "92 ft",
+      beam: "19 ft",
+      draft: "3 ft 11 in",
+      speed: "26 knots",
+      fuelCapacity: "1,600 gal",
+      waterCapacity: "350 gal",
+    },
+    features: [
+      "Three-stateroom overnight comfort",
+      "Extended sun deck",
+      "Onboard jet ski included",
+      "Effortless long-range cruising",
     ],
     status: "active",
   },
@@ -91,14 +176,14 @@ export const yachts: Yacht[] = [
     builder: "Leopard",
     year: 2020,
     images: [
-      "/yachts/leopard-86/hero.jpg",
-      "/yachts/leopard-86/exterior.jpg",
-      "/yachts/leopard-86/stern.jpg",
-      "/yachts/leopard-86/aerial.jpg",
-      "/yachts/leopard-86/upper-deck.jpg",
-      "/yachts/leopard-86/lounge.jpg",
+      "/yachts/leopard-86/01.jpg",
+      "/yachts/leopard-86/02.jpg",
+      "/yachts/leopard-86/03.jpg",
+      "/yachts/leopard-86/04.jpg",
+      "/yachts/leopard-86/05.jpg",
+      "/yachts/leopard-86/06.jpg",
     ],
-    heroImage: "/yachts/leopard-86/thumb.jpg",
+    thumbnail: "/yachts/leopard-86/thumb.jpg",
     amenities: [
       "Expansive flybridge with wet bar",
       "Bow sunpad lounge",
@@ -150,6 +235,80 @@ export const yachts: Yacht[] = [
     ],
     status: "active",
   },
+  // NOTE: specs & pricing PRELIMINARY. Confirm real values with owner.
+  {
+    id: "leopard-82",
+    slug: "leopard-82",
+    name: "82' Leopard Sport Yacht",
+    tagline: "Speed and Style on Biscayne Bay",
+    description:
+      "The 82-foot Leopard is a true Italian sport yacht, all sleek lines and effortless speed. Her signature low profile and red racing stripe make her one of the most striking silhouettes on the water. The expansive teak flybridge is built for sun-soaked days and golden-hour cruising, with generous lounging, a wet bar, and panoramic views in every direction. Fast, agile, and endlessly photogenic, she is the perfect choice for sunset charters, sandbar afternoons, and making an entrance wherever the day takes you.",
+    length: 82,
+    capacity: 12,
+    cabins: 2,
+    crew: 2,
+    builder: "Leopard",
+    year: 2016,
+    images: [
+      "/yachts/leopard-82/01.jpg",
+      "/yachts/leopard-82/02.jpg",
+      "/yachts/leopard-82/03.jpg",
+      "/yachts/leopard-82/04.jpg",
+      "/yachts/leopard-82/05.jpg",
+      "/yachts/leopard-82/06.jpg",
+    ],
+    thumbnail: "/yachts/leopard-82/thumb.jpg",
+    amenities: [
+      "Expansive teak flybridge",
+      "Flybridge wet bar",
+      "Bow sunpad lounge",
+      "Hydraulic swim platform",
+      "Premium sound system",
+      "Sun-deck dining",
+      "Water toys storage",
+      "LED underwater lights",
+      "Shaded flybridge lounge",
+      "High-speed cruising",
+    ],
+    includes: [
+      "Captain & professional crew",
+      "Fuel",
+      "Ice, water & soft drinks",
+      "Bluetooth audio",
+      "Snorkeling gear",
+      "Beach towels",
+    ],
+    pricing: { halfDay: 5000, fullDay: 8500, multiDayPerDay: 7500, currency: "USD" },
+    availability: {
+      operatingHours: { start: "08:00", end: "20:00" },
+      blackoutDates: [],
+      slots: [],
+    },
+    location: {
+      marina: "Miami Beach Marina",
+      address: "300 Alton Road",
+      city: "Miami Beach",
+      state: "FL",
+      lat: 25.7701,
+      lng: -80.1425,
+      dockNumber: "D-18",
+    },
+    specs: {
+      length: "82 ft",
+      beam: "20 ft",
+      draft: "4 ft 6 in",
+      speed: "38 knots",
+      fuelCapacity: "1,300 gal",
+      waterCapacity: "260 gal",
+    },
+    features: [
+      "Italian sport-yacht styling",
+      "Top speed of 38 knots",
+      "Expansive teak flybridge",
+      "Built for golden-hour cruising",
+    ],
+    status: "active",
+  },
   {
     id: "princess-v65",
     slug: "princess-v65",
@@ -164,17 +323,14 @@ export const yachts: Yacht[] = [
     builder: "Princess",
     year: 2022,
     images: [
-      "/yachts/princess-v65/hero.jpg",
-      "/yachts/princess-v65/bow.jpg",
-      "/yachts/princess-v65/exterior.jpg",
-      "/yachts/princess-v65/docked.jpg",
-      "/yachts/princess-v65/daybeds.jpg",
-      "/yachts/princess-v65/interior.jpg",
-      "/yachts/princess-v65/aerial.jpg",
-      "/yachts/princess-v65/profile.jpg",
-      "/yachts/princess-v65/cockpit.jpg",
+      "/yachts/princess-v65/01.jpg",
+      "/yachts/princess-v65/02.jpg",
+      "/yachts/princess-v65/03.jpg",
+      "/yachts/princess-v65/04.jpg",
+      "/yachts/princess-v65/05.jpg",
+      "/yachts/princess-v65/06.jpg",
     ],
-    heroImage: "/yachts/princess-v65/thumb.jpg",
+    thumbnail: "/yachts/princess-v65/thumb.jpg",
     amenities: [
       "Retractable hardtop",
       "Cockpit wet bar & grill",
@@ -232,7 +388,7 @@ export const yachts: Yacht[] = [
     name: "82' Nissi",
     tagline: "Mediterranean Soul, Miami Waters",
     description:
-      "The 82-foot Nissi brings Mediterranean glamour to Biscayne Bay. Built for those who appreciate refined European styling with serious open-water capability, she features a sweeping flybridge, four beautifully appointed staterooms, and a main salon that flows seamlessly into the aft cockpit — creating one uninterrupted entertainment space. Her deep-V hull delivers a remarkably smooth ride even in choppy conditions, making her equally at home on a sunset cruise to Star Island or a weekend run to the Bahamas.",
+      "The 82-foot Nissi brings Mediterranean glamour to Biscayne Bay. Built for those who appreciate refined European styling with serious open-water capability, she features a sweeping flybridge, four beautifully appointed staterooms, and a main salon that flows seamlessly into the aft cockpit, creating one uninterrupted entertainment space. Her deep-V hull delivers a remarkably smooth ride even in choppy conditions, making her equally at home on a sunset cruise to Star Island or a weekend run to the Bahamas.",
     length: 82,
     capacity: 18,
     cabins: 4,
@@ -240,14 +396,14 @@ export const yachts: Yacht[] = [
     builder: "Nissi",
     year: 2021,
     images: [
-      "/yachts/nissi-82/hero.jpg",
-      "/yachts/nissi-82/aerial.jpg",
-      "/yachts/nissi-82/flybridge.jpg",
-      "/yachts/nissi-82/salon.jpg",
-      "/yachts/nissi-82/master.jpg",
-      "/yachts/nissi-82/exterior.jpg",
+      "/yachts/nissi-82/01.jpg",
+      "/yachts/nissi-82/02.jpg",
+      "/yachts/nissi-82/03.jpg",
+      "/yachts/nissi-82/04.jpg",
+      "/yachts/nissi-82/05.jpg",
+      "/yachts/nissi-82/06.jpg",
     ],
-    heroImage: "/yachts/nissi-82/thumb.jpg",
+    thumbnail: "/yachts/nissi-82/thumb.jpg",
     amenities: [
       "Expansive flybridge with sun pads",
       "Aft deck dining for 12",
@@ -258,9 +414,7 @@ export const yachts: Yacht[] = [
       "Master suite with panoramic windows",
       "Satellite TV & streaming",
       "LED underwater lights",
-      "Tender garage",
       "Bow sunpad lounge",
-      "Cockpit wet bar",
     ],
     includes: [
       "Captain & professional crew",
@@ -315,16 +469,14 @@ export const yachts: Yacht[] = [
     builder: "Cruisers Yachts",
     year: 2023,
     images: [
-      "/yachts/cantius-45/hero.jpg",
-      "/yachts/cantius-45/aerial.jpg",
-      "/yachts/cantius-45/drone-side.jpg",
-      "/yachts/cantius-45/galley.jpg",
-      "/yachts/cantius-45/galley-2.jpg",
-      "/yachts/cantius-45/salon.jpg",
-      "/yachts/cantius-45/aft-deck.jpg",
-      "/yachts/cantius-45/head.jpg",
+      "/yachts/cantius-45/01.jpg",
+      "/yachts/cantius-45/02.jpg",
+      "/yachts/cantius-45/03.jpg",
+      "/yachts/cantius-45/04.jpg",
+      "/yachts/cantius-45/05.jpg",
+      "/yachts/cantius-45/06.jpg",
     ],
-    heroImage: "/yachts/cantius-45/thumb.jpg",
+    thumbnail: "/yachts/cantius-45/thumb.jpg",
     amenities: [
       "Retractable sunroof",
       "Fold-down bulwark windows",
@@ -342,8 +494,7 @@ export const yachts: Yacht[] = [
       "Fuel",
       "Ice, water & soft drinks",
       "Bluetooth audio",
-      "Sea pool & floating mat",
-      "Lily pad float",
+      "Sea pool, floating mat & lily pad",
       "Snorkeling gear",
     ],
     pricing: { halfDay: 2200, fullDay: 3800, multiDayPerDay: 3200, currency: "USD" },
@@ -374,7 +525,6 @@ export const yachts: Yacht[] = [
       "Open-concept indoor/outdoor layout",
       "Retractable sunroof",
       "Premium walnut interior",
-      "Perfect sandbar day boat",
     ],
     status: "active",
   },
@@ -390,4 +540,42 @@ export function getYachtById(id: string): Yacht | undefined {
 
 export function getActiveYachts(): Yacht[] {
   return yachts.filter((y) => y.status === "active");
+}
+
+/**
+ * Fails loudly in development if any yacht drifts from FLEET_SHAPE. A rule
+ * that lives only in a comment is a rule nobody enforces.
+ */
+function assertFleetUniformity(list: Yacht[]): void {
+  const problems: string[] = [];
+
+  for (const y of list) {
+    if (y.images.length !== FLEET_SHAPE.images) {
+      problems.push(`${y.name}: ${y.images.length} images, expected ${FLEET_SHAPE.images}`);
+    }
+    if (y.amenities.length !== FLEET_SHAPE.amenities) {
+      problems.push(`${y.name}: ${y.amenities.length} amenities, expected ${FLEET_SHAPE.amenities}`);
+    }
+    if (y.includes.length !== FLEET_SHAPE.includes) {
+      problems.push(`${y.name}: ${y.includes.length} includes, expected ${FLEET_SHAPE.includes}`);
+    }
+    if ((y.features?.length ?? 0) !== FLEET_SHAPE.features) {
+      problems.push(`${y.name}: ${y.features?.length ?? 0} features, expected ${FLEET_SHAPE.features}`);
+    }
+    const bad = y.images.filter((src) => !/\/\d{2}\.jpg$/.test(src));
+    if (bad.length > 0) {
+      problems.push(`${y.name}: gallery images must be numbered 01..06.jpg (${bad.join(", ")})`);
+    }
+    if (!y.thumbnail.endsWith("/thumb.jpg")) {
+      problems.push(`${y.name}: thumbnail must be thumb.jpg (${y.thumbnail})`);
+    }
+  }
+
+  if (problems.length > 0) {
+    throw new Error(`Fleet data is not uniform:\n  ${problems.join("\n  ")}`);
+  }
+}
+
+if (process.env.NODE_ENV !== "production") {
+  assertFleetUniformity(yachts);
 }

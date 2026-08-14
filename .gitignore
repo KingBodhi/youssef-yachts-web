@@ -9,3 +9,6 @@ next-env.d.ts
 # Prisma generated client
 /src/generated
 .env*
+
+# Full-resolution photo originals (kept locally, not deployed)
+/photo-sources

@@ -24,22 +24,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = `${yacht.name} | ${BRAND.name}`;
-  const description = `Charter the ${yacht.name} — ${yacht.tagline}. ${yacht.length}' luxury yacht for up to ${yacht.capacity} guests. Starting from ${formatCurrency(yacht.pricing.halfDay)} for a half-day charter in Miami.`;
+  const description = `Charter the ${yacht.name}. ${yacht.tagline}. A ${yacht.length}-foot luxury yacht for up to ${yacht.capacity} guests, from ${formatCurrency(yacht.pricing.halfDay)} for a half-day charter in Miami.`;
 
   return {
     title,
     description,
+    alternates: { canonical: `/fleet/${yacht.slug}` },
     openGraph: {
       title,
       description,
       siteName: BRAND.name,
       type: "website",
-      images: yacht.heroImage ? [{ url: yacht.heroImage }] : [],
+      url: `/fleet/${yacht.slug}`,
+      images: [{ url: yacht.images[0], width: 1800, height: 1200, alt: yacht.name }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [yacht.images[0]],
     },
   };
 }

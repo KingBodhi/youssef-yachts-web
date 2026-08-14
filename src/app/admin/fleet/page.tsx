@@ -106,7 +106,7 @@ export default function AdminFleetPage() {
                 <div className="flex items-start gap-4">
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#E9E9EC]/15">
                     <Image
-                      src={yacht.heroImage}
+                      src={yacht.thumbnail}
                       alt={yacht.name}
                       fill
                       className="object-cover"

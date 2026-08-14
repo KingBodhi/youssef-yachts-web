@@ -23,6 +23,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Keeps anchor targets clear of the fixed 80px header. */
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -31,6 +33,8 @@ body {
   font-family: var(--font-body), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Stops the horizontal scrollbar that parallax and marquee overflow can cause. */
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -66,6 +70,26 @@ body {
   outline-offset: 2px;
 }
 
+/* Skip link, visible only once focused. */
+.skip-link {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 100;
+  translate: -50% -150%;
+  border-radius: 0 0 0.75rem 0.75rem;
+  background: #E9E9EC;
+  color: #0A0A0B;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: translate 200ms ease-out;
+}
+
+.skip-link:focus-visible {
+  translate: -50% 0;
+}
+
 .text-brand-gradient {
   background: linear-gradient(135deg, #FFFFFF 0%, #C4C4CB 50%, #8A8A92 100%);
   -webkit-background-clip: text;
@@ -85,6 +109,16 @@ body {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.12), 0 0 40px rgba(255, 255, 255, 0.05);
 }
 
+/* Hairline rule used to separate bands. */
+.hairline {
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    rgba(233, 233, 236, 0.2),
+    transparent
+  );
+}
+
 a,
 button {
   transition-property: color, background-color, border-color, opacity, box-shadow, transform;
@@ -92,35 +126,167 @@ button {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes scroll-bounce {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(12px);
-    opacity: 0.3;
-  }
-}
+/* ============================================================
+   Keyframes
+   ============================================================ */
 
-.animate-scroll-bounce {
-  animation: scroll-bounce 2s ease-in-out infinite;
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50%      { transform: translateY(12px); opacity: 0.3; }
 }
+.animate-scroll-bounce { animation: scroll-bounce 2s ease-in-out infinite; }
 
 @keyframes accordion-down {
-  0% { height: 0; opacity: 0; }
+  0%   { height: 0; opacity: 0; }
   100% { height: var(--radix-accordion-content-height); opacity: 1; }
 }
 
 @keyframes accordion-up {
-  0% { height: var(--radix-accordion-content-height); opacity: 1; }
+  0%   { height: var(--radix-accordion-content-height); opacity: 1; }
   100% { height: 0; opacity: 0; }
 }
 
-.animate-accordion-down {
-  animation: accordion-down 300ms ease-out;
+.animate-accordion-down { animation: accordion-down 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+.animate-accordion-up   { animation: accordion-up 250ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes kenburns {
+  0%   { transform: scale(1.05) translate3d(0, 0, 0); }
+  100% { transform: scale(1.18) translate3d(-1.5%, -1.5%, 0); }
+}
+.animate-kenburns {
+  animation: kenburns 26s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
-.animate-accordion-up {
-  animation: accordion-up 300ms ease-out;
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
+
+@keyframes gradient-pan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-pan {
+  background-size: 200% 200%;
+  animation: gradient-pan 8s ease infinite;
+}
+
+/* Sheen sweep shared by cards and buttons. */
+@keyframes sheen {
+  0%   { transform: translateX(-120%) skewX(-18deg); }
+  100% { transform: translateX(220%) skewX(-18deg); }
+}
+.sheen-parent { position: relative; overflow: hidden; }
+.sheen-parent::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  pointer-events: none;
+  opacity: 0;
+}
+.sheen-parent:hover::after {
+  opacity: 1;
+  animation: sheen 0.9s ease;
+}
+
+@keyframes pulse-line {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.7; }
+}
+.animate-pulse-line { animation: pulse-line 3.5s ease-in-out infinite; }
+
+/* ============================================================
+   Marquee ticker
+   ============================================================ */
+
+@keyframes marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation-name: marquee-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2rem;
+  padding-inline: 1rem;
+  font-family: var(--font-heading), Georgia, serif;
+  font-size: 1.125rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(244, 244, 246, 0.5);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .marquee-item { font-size: 1.375rem; }
+}
+
+.marquee-dot {
+  display: inline-block;
+  height: 4px;
+  width: 4px;
+  border-radius: 9999px;
+  background: rgba(233, 233, 236, 0.35);
+}
+
+/* ============================================================
+   Reveal fallback (progressive enhancement if JS is disabled)
+   ============================================================ */
+
+.reveal-init { opacity: 0; }
+.no-js .reveal-init { opacity: 1; }
+
+/* ============================================================
+   Reduced motion. Every decorative animation stops; nothing that
+   carries meaning depends on movement to be readable.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-kenburns,
+  .animate-float-slow,
+  .animate-gradient-pan,
+  .animate-scroll-bounce,
+  .animate-pulse-line,
+  .marquee-track { animation: none !important; }
+
+  .sheen-parent:hover::after { animation: none !important; opacity: 0 !important; }
+
+  .reveal-init { opacity: 1 !important; }
 }

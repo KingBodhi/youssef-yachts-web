@@ -314,7 +314,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
         <div className="mb-8 flex items-center gap-4">
           <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-md bg-navy-light">
             <Image
-              src={yacht.heroImage}
+              src={yacht.thumbnail}
               alt={yacht.name}
               fill
               className="object-cover"

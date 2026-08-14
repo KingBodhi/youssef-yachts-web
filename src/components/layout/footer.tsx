@@ -53,7 +53,7 @@ const FOOTER_LINKS = {
   charter: [
     { label: "Fleet", href: "/fleet" },
     { label: "Book a Charter", href: "/contact" },
-    { label: "Availability", href: "/fleet" },
+    { label: "Charter FAQ", href: "/faq" },
   ],
   company: [
     { label: "About", href: "/about" },
@@ -77,7 +77,7 @@ export function Footer() {
       {/* Accent Divider */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 gap-12 py-16 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* Brand Column */}
@@ -193,7 +193,7 @@ export function Footer() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-white/10 text-white/40 transition-all duration-300 hover:border-white/40 hover:text-white hover:bg-white/5"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/40 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/5 hover:text-white"
                     aria-label={`Follow us on ${link.label}`}
                   >
                     <Icon className="h-4 w-4" />

@@ -72,7 +72,7 @@ export function PriceSummary({
         <div className="flex items-start gap-4">
           <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md bg-navy-light">
             <Image
-              src={yacht.heroImage}
+              src={yacht.thumbnail}
               alt={yacht.name}
               fill
               className="object-cover"
