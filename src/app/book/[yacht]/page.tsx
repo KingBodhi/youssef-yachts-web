@@ -18,11 +18,11 @@ export async function generateMetadata({
   const yacht = getYachtBySlug(slug);
 
   if (!yacht) {
-    return { title: "Yacht Not Found | Hurry Up Slowly" };
+    return { title: "Yacht Not Found | Hurry Up Slowly Yachts" };
   }
 
   return {
-    title: `Book ${yacht.name} | Hurry Up Slowly`,
+    title: `Book ${yacht.name} | Hurry Up Slowly Yachts`,
     description: `Reserve the ${yacht.name} for your luxury charter experience in Miami. Capacity: ${yacht.capacity} guests.`,
   };
 }

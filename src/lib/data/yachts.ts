@@ -8,7 +8,8 @@ import { Yacht } from "@/lib/types";
  * to 12, which made the fleet look unevenly documented.
  */
 export const FLEET_SHAPE = {
-  images: 6,
+  minImages: 6,
+  maxImages: 20,
   amenities: 10,
   includes: 6,
   features: 4,
@@ -35,6 +36,12 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-92/04.jpg",
       "/yachts/leopard-92/05.jpg",
       "/yachts/leopard-92/06.jpg",
+      "/yachts/leopard-92/07.jpg",
+      "/yachts/leopard-92/08.jpg",
+      "/yachts/leopard-92/09.jpg",
+      "/yachts/leopard-92/10.jpg",
+      "/yachts/leopard-92/11.jpg",
+      "/yachts/leopard-92/12.jpg",
     ],
     thumbnail: "/yachts/leopard-92/thumb.jpg",
     amenities: [
@@ -109,6 +116,11 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-92-zen/04.jpg",
       "/yachts/leopard-92-zen/05.jpg",
       "/yachts/leopard-92-zen/06.jpg",
+      "/yachts/leopard-92-zen/07.jpg",
+      "/yachts/leopard-92-zen/08.jpg",
+      "/yachts/leopard-92-zen/09.jpg",
+      "/yachts/leopard-92-zen/10.jpg",
+      "/yachts/leopard-92-zen/11.jpg",
     ],
     thumbnail: "/yachts/leopard-92-zen/thumb.jpg",
     amenities: [
@@ -256,6 +268,11 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-82/04.jpg",
       "/yachts/leopard-82/05.jpg",
       "/yachts/leopard-82/06.jpg",
+      "/yachts/leopard-82/07.jpg",
+      "/yachts/leopard-82/08.jpg",
+      "/yachts/leopard-82/09.jpg",
+      "/yachts/leopard-82/10.jpg",
+      "/yachts/leopard-82/11.jpg",
     ],
     thumbnail: "/yachts/leopard-82/thumb.jpg",
     amenities: [
@@ -312,11 +329,11 @@ export const yachts: Yacht[] = [
   {
     id: "princess-v65",
     slug: "princess-v65",
-    name: "70' Princess V65",
+    name: "67' Princess V65",
     tagline: "British Craftsmanship, Miami Style",
     description:
       "The Princess V65 is a masterwork of British naval architecture refined for Miami's waters. Her aggressive yet elegant lines conceal three luxurious staterooms, a hand-finished salon, and a cockpit designed for effortless entertaining. The retractable hardtop transforms the main deck from an open-air paradise to a sheltered lounge at the touch of a button. With a top speed of 34 knots, she can whisk you from downtown Miami to Bimini in under three hours.",
-    length: 70,
+    length: 67,
     capacity: 13,
     cabins: 3,
     crew: 2,
@@ -329,6 +346,12 @@ export const yachts: Yacht[] = [
       "/yachts/princess-v65/04.jpg",
       "/yachts/princess-v65/05.jpg",
       "/yachts/princess-v65/06.jpg",
+      "/yachts/princess-v65/07.jpg",
+      "/yachts/princess-v65/08.jpg",
+      "/yachts/princess-v65/09.jpg",
+      "/yachts/princess-v65/10.jpg",
+      "/yachts/princess-v65/11.jpg",
+      "/yachts/princess-v65/12.jpg",
     ],
     thumbnail: "/yachts/princess-v65/thumb.jpg",
     amenities: [
@@ -367,7 +390,7 @@ export const yachts: Yacht[] = [
       dockNumber: "D-08",
     },
     specs: {
-      length: "70 ft (65 ft hull)",
+      length: "66 ft 8 in",
       beam: "16 ft 9 in",
       draft: "4 ft 11 in",
       speed: "34 knots",
@@ -475,6 +498,11 @@ export const yachts: Yacht[] = [
       "/yachts/cantius-45/04.jpg",
       "/yachts/cantius-45/05.jpg",
       "/yachts/cantius-45/06.jpg",
+      "/yachts/cantius-45/07.jpg",
+      "/yachts/cantius-45/08.jpg",
+      "/yachts/cantius-45/09.jpg",
+      "/yachts/cantius-45/10.jpg",
+      "/yachts/cantius-45/11.jpg",
     ],
     thumbnail: "/yachts/cantius-45/thumb.jpg",
     amenities: [
@@ -550,8 +578,13 @@ function assertFleetUniformity(list: Yacht[]): void {
   const problems: string[] = [];
 
   for (const y of list) {
-    if (y.images.length !== FLEET_SHAPE.images) {
-      problems.push(`${y.name}: ${y.images.length} images, expected ${FLEET_SHAPE.images}`);
+    if (
+      y.images.length < FLEET_SHAPE.minImages ||
+      y.images.length > FLEET_SHAPE.maxImages
+    ) {
+      problems.push(
+        `${y.name}: ${y.images.length} images, expected ${FLEET_SHAPE.minImages}-${FLEET_SHAPE.maxImages}`
+      );
     }
     if (y.amenities.length !== FLEET_SHAPE.amenities) {
       problems.push(`${y.name}: ${y.amenities.length} amenities, expected ${FLEET_SHAPE.amenities}`);

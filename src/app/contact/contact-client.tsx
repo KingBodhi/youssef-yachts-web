@@ -7,14 +7,10 @@ import { z } from "zod/v4";
 import { motion } from "framer-motion";
 import {
   Phone,
-  Mail,
   MapPin,
   Clock,
-  Send,
+  MessageSquare,
   CheckCircle,
-  Instagram,
-  Facebook,
-  Youtube,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BRAND, CHARTER_TYPES, ADD_ONS } from "@/lib/constants";
@@ -50,21 +46,21 @@ type ContactFormData = z.infer<typeof contactSchema>;
 const contactInfo = [
   {
     icon: Phone,
-    label: "Phone",
+    label: "Call",
     value: BRAND.phone,
-    href: `tel:${BRAND.phone.replace(/\D/g, "")}`,
+    href: `tel:${BRAND.phoneHref}`,
   },
   {
-    icon: Mail,
-    label: "Email",
-    value: BRAND.email,
-    href: `mailto:${BRAND.email}`,
+    icon: MessageSquare,
+    label: "Text",
+    value: BRAND.phone,
+    href: `sms:${BRAND.phoneHref}`,
   },
   {
     icon: MapPin,
-    label: "Address",
-    value: BRAND.address,
-    href: `https://maps.google.com/?q=${encodeURIComponent(BRAND.address)}`,
+    label: "Location",
+    value: BRAND.location,
+    href: undefined,
   },
 ];
 
@@ -73,20 +69,37 @@ const businessHours = [
   { days: "Sunday", hours: "9:00 AM to 6:00 PM" },
 ];
 
-const socialLinks = [
-  { icon: Instagram, label: "Instagram", href: BRAND.instagram },
-  { icon: Facebook, label: "Facebook", href: BRAND.facebook },
-  { icon: Youtube, label: "YouTube", href: BRAND.youtube },
-];
-
 const inputClasses =
   "w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted/60 transition-colors duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
 const labelClasses = "mb-1.5 block text-sm font-medium text-foreground/80";
 const errorClasses = "mt-1.5 text-xs text-primary-light";
 const cardClasses = "rounded-2xl border border-border bg-surface p-6";
 
+function buildRequestText(data: ContactFormData): string {
+  const charter =
+    CHARTER_TYPES.find((c) => c.id === data.charterType)?.label ??
+    data.charterType;
+  const addOns = data.addOns
+    .map((id) => ADD_ONS.find((a) => a.id === id)?.name ?? id)
+    .join(", ");
+  const lines = [
+    `Charter inquiry for ${BRAND.name}`,
+    `Name: ${data.firstName} ${data.lastName}`,
+    `Email: ${data.email}`,
+    `Phone: ${data.phone}`,
+    `Preferred date: ${data.preferredDate}`,
+    `Party size: ${data.partySize}`,
+    `Charter type: ${charter}`,
+    data.occasion ? `Occasion: ${data.occasion}` : "",
+    addOns ? `Add-ons: ${addOns}` : "",
+    data.message ? `Details: ${data.message}` : "",
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
 export function ContactClient() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [requestText, setRequestText] = useState("");
 
   const {
     register,
@@ -110,52 +123,61 @@ export function ContactClient() {
   });
 
   const onSubmit = async (data: ContactFormData) => {
-    // NOTE: this inquiry is not yet delivered anywhere. There is no email
-    // provider or inquiries table wired up, so the submission is simulated.
-    // Point this at a real endpoint before the site handles live enquiries.
-    if (process.env.NODE_ENV !== "production") {
-      console.info("Charter inquiry (not yet delivered):", data);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    setRequestText(buildRequestText(data));
     setIsSubmitted(true);
   };
 
   if (isSubmitted) {
+    const smsHref = `sms:${BRAND.phoneHref}?&body=${encodeURIComponent(
+      requestText
+    )}`;
     return (
       <div className="flex min-h-screen items-center justify-center px-6 pt-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: DURATION.base, ease: EASE }}
-          className="mx-auto max-w-lg rounded-2xl border border-border bg-surface p-12 text-center"
+          className="mx-auto max-w-lg rounded-2xl border border-border bg-surface p-10 text-center sm:p-12"
         >
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle className="h-10 w-10 text-primary-light" />
           </div>
           <h1 className="font-heading text-2xl font-bold text-foreground">
-            Inquiry Received
+            Your Request Is Ready
           </h1>
           <p className="mt-4 text-muted">
-            Thank you for your interest in {BRAND.name}. Our concierge team will
-            review your inquiry and get back to you within 24 hours.
+            Send the details straight to {BRAND.contactName}, or call to plan
+            your charter and confirm availability.
           </p>
-          <p className="mt-2 text-sm text-muted/70">
-            For urgent requests, call us directly at{" "}
-            <a
-              href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
-              className="text-primary-light underline-offset-4 hover:underline"
-            >
-              {BRAND.phone}
-            </a>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button asChild size="lg">
+              <a href={`tel:${BRAND.phoneHref}`}>
+                <Phone className="h-4 w-4" />
+                Call {BRAND.contactName}
+              </a>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href={smsHref}>
+                <MessageSquare className="h-4 w-4" />
+                Text Your Request
+              </a>
+            </Button>
+          </div>
+
+          <p className="mt-6 text-sm text-muted/70">
+            {BRAND.phone}
           </p>
+
           <Button
-            className="mt-8"
+            variant="ghost"
+            className="mt-6"
             onClick={() => {
               reset();
               setIsSubmitted(false);
             }}
           >
-            Submit Another Inquiry
+            Start a New Request
           </Button>
         </motion.div>
       </div>
@@ -168,7 +190,7 @@ export function ContactClient() {
         eyebrow="Get in Touch"
         title="Plan Your Perfect Charter"
         accentFrom={2}
-        lede="Tell us about the day you have in mind and our concierge team will build the itinerary around it."
+        lede="Tell us about the day you have in mind and our team will build the itinerary around it."
       />
 
       <Section space="tight" className="pt-0">
@@ -181,7 +203,8 @@ export function ContactClient() {
                   Charter Inquiry
                 </h2>
                 <p className="mt-1 text-sm text-muted">
-                  Fields marked with an asterisk are required.
+                  Fields marked with an asterisk are required. On the next step
+                  you can send your request by text or call us directly.
                 </p>
 
                 <div className="mt-8 space-y-6">
@@ -196,7 +219,7 @@ export function ContactClient() {
                         autoComplete="given-name"
                         aria-invalid={!!errors.firstName}
                         className={inputClasses}
-                        placeholder="John"
+                        placeholder="First name"
                         {...register("firstName")}
                       />
                       {errors.firstName && (
@@ -213,7 +236,7 @@ export function ContactClient() {
                         autoComplete="family-name"
                         aria-invalid={!!errors.lastName}
                         className={inputClasses}
-                        placeholder="Doe"
+                        placeholder="Last name"
                         {...register("lastName")}
                       />
                       {errors.lastName && (
@@ -233,7 +256,7 @@ export function ContactClient() {
                         autoComplete="email"
                         aria-invalid={!!errors.email}
                         className={inputClasses}
-                        placeholder="john@example.com"
+                        placeholder="you@example.com"
                         {...register("email")}
                       />
                       {errors.email && (
@@ -250,7 +273,7 @@ export function ContactClient() {
                         autoComplete="tel"
                         aria-invalid={!!errors.phone}
                         className={inputClasses}
-                        placeholder="(305) 555-0199"
+                        placeholder="Your phone number"
                         {...register("phone")}
                       />
                       {errors.phone && (
@@ -327,7 +350,7 @@ export function ContactClient() {
                         id="occasion"
                         type="text"
                         className={inputClasses}
-                        placeholder="Birthday, corporate, wedding"
+                        placeholder="Birthday, corporate, celebration"
                         {...register("occasion")}
                       />
                       {errors.occasion && (
@@ -378,36 +401,8 @@ export function ContactClient() {
                     className="w-full sm:w-auto"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <svg
-                          className="h-4 w-4 animate-spin"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          aria-hidden="true"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                          />
-                        </svg>
-                        Sending
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Submit Inquiry
-                      </>
-                    )}
+                    <MessageSquare className="h-4 w-4" />
+                    Continue
                   </Button>
                 </div>
               </div>
@@ -421,21 +416,32 @@ export function ContactClient() {
                 Contact Information
               </h2>
               <div className="mt-5 space-y-4">
-                {contactInfo.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target={item.label === "Address" ? "_blank" : undefined}
-                    rel={item.label === "Address" ? "noopener noreferrer" : undefined}
-                    className="flex items-start gap-3 text-sm text-muted transition-colors duration-200 hover:text-primary-light"
-                  >
-                    <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>
-                      <span className="sr-only">{item.label}: </span>
-                      {item.value}
-                    </span>
-                  </a>
-                ))}
+                {contactInfo.map((item) =>
+                  item.href ? (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-start gap-3 text-sm text-muted transition-colors duration-200 hover:text-primary-light"
+                    >
+                      <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>
+                        <span className="sr-only">{item.label}: </span>
+                        {item.value}
+                      </span>
+                    </a>
+                  ) : (
+                    <div
+                      key={item.label}
+                      className="flex items-start gap-3 text-sm text-muted"
+                    >
+                      <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>
+                        <span className="sr-only">{item.label}: </span>
+                        {item.value}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </StaggerItem>
 
@@ -457,36 +463,16 @@ export function ContactClient() {
               </dl>
             </StaggerItem>
 
-            <StaggerItem className={cardClasses}>
-              <h2 className="font-heading text-lg font-semibold text-foreground">
-                Follow Us
-              </h2>
-              <div className="mt-5 flex gap-3">
-                {socialLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={link.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-muted transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary-light"
-                  >
-                    <link.icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
-            </StaggerItem>
-
             <StaggerItem className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
               <p className="text-sm font-semibold text-primary-light">
                 Same-day availability
               </p>
               <p className="mt-2 text-sm text-muted">
-                Call us directly for same-day openings and last-minute bookings.
-                Our team is standing by.
+                Call or text {BRAND.contactName} directly for same-day openings
+                and last-minute bookings.
               </p>
               <a
-                href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
+                href={`tel:${BRAND.phoneHref}`}
                 className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-light transition-colors hover:text-white"
               >
                 <Phone className="h-4 w-4" />

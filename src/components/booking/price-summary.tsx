@@ -161,10 +161,10 @@ export function PriceSummary({
           <CreditCard className="h-5 w-5 shrink-0 text-primary" />
           <div>
             <p className="text-sm font-semibold text-primary">
-              Deposit Due: {formatCurrency(deposit)}
+              50% Deposit: {formatCurrency(deposit)}
             </p>
             <p className="mt-0.5 text-xs text-muted">
-              50% deposit to confirm. Balance due day of charter.
+              Deposit confirms your date. Balance due on the day of your charter.
             </p>
           </div>
         </div>

@@ -254,11 +254,11 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
         },
         payment: {
           method: "card",
-          status: "deposit_paid",
-          paidAmount: deposit,
-          remainingAmount: total - deposit,
+          status: "pending",
+          paidAmount: 0,
+          remainingAmount: total,
         },
-        status: "deposit_paid",
+        status: "pending",
         notes: data.specialRequests || undefined,
       });
 
@@ -432,7 +432,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
               className="gap-2"
             >
               <CreditCard className="h-4 w-4" />{" "}
-              {submitting ? "Processing..." : "Confirm & Pay Deposit"}
+              {submitting ? "Sending..." : "Request This Charter"}
             </Button>
           )}
         </div>
@@ -884,10 +884,11 @@ function StepReview({
     <div className="space-y-10">
       <div>
         <h2 className="font-heading text-3xl font-semibold text-foreground">
-          Review &amp; Pay
+          Review &amp; Request
         </h2>
         <p className="mt-2 text-muted">
-          Review your selections below. A 50% deposit secures your reservation.
+          Review your selections below. No payment is taken online. A 50%
+          deposit confirms your reservation once we verify availability.
         </p>
       </div>
 
@@ -978,10 +979,10 @@ function StepReview({
             </div>
             <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 p-3 text-center">
               <p className="text-sm font-semibold text-primary">
-                Deposit Due Today: {formatCurrency(deposit)}
+                50% Deposit to Confirm: {formatCurrency(deposit)}
               </p>
               <p className="mt-0.5 text-xs text-muted">
-                Remaining {formatCurrency(total - deposit)} due day of charter
+                Balance {formatCurrency(total - deposit)} due on the day of your charter
               </p>
             </div>
           </div>
@@ -1037,14 +1038,14 @@ function SuccessState({
         <Check className="h-10 w-10 text-primary" />
       </div>
       <h2 className="font-heading text-4xl font-bold text-foreground">
-        Booking Confirmed
+        Request Received
       </h2>
       <p className="mx-auto mt-4 max-w-md text-muted">
-        Thank you, {data.firstName}! Your reservation for the{" "}
+        Thank you, {data.firstName}! Your request for the{" "}
         <span className="text-primary-light">{yacht.name}</span> has been received.
-        We&apos;ll reach out at{" "}
-        <span className="text-foreground">{data.email}</span> to confirm the
-        details.
+        We&apos;ll contact you at{" "}
+        <span className="text-foreground">{data.email}</span> to confirm
+        availability and arrange your deposit.
       </p>
 
       {/* Booker waiver — required before boarding */}

@@ -10,7 +10,7 @@ export interface Yacht {
   crew: number;
   builder: string;
   year: number;
-  /** Exactly GALLERY_SIZE images, 1800x1200, named 01..06.jpg. images[0] is the lead. */
+  /** 6-20 images, 1800x1200, named 01..NN.jpg. images[0] is the lead/hero. */
   images: string[];
   /** 1200x800 card crop derived from images[0]. */
   thumbnail: string;

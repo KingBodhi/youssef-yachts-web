@@ -113,7 +113,7 @@ export function Header() {
 
             <div className="hidden items-center gap-4 lg:flex">
               <a
-                href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
+                href={`tel:${BRAND.phoneHref}`}
                 className="flex items-center gap-2 text-sm text-white/60 transition-colors duration-300 hover:text-white"
               >
                 <Phone className="h-4 w-4" />
@@ -215,7 +215,7 @@ export function Header() {
 
                 <div className="space-y-4 border-t border-white/5 px-6 py-6">
                   <a
-                    href={`tel:${BRAND.phone.replace(/\D/g, "")}`}
+                    href={`tel:${BRAND.phoneHref}`}
                     className="flex items-center gap-3 text-sm text-white/60 transition-colors hover:text-white"
                   >
                     <Phone className="h-4 w-4" />

@@ -69,7 +69,7 @@ export function CtaSection() {
             <Link href="/contact">Book Now</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <a href={`tel:${BRAND.phone.replace(/[^+\d]/g, "")}`}>
+            <a href={`tel:${BRAND.phoneHref}`}>
               <Phone className="h-4 w-4" />
               {BRAND.phone}
             </a>

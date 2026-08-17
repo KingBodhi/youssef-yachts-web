@@ -22,12 +22,9 @@ interface GalleryProps {
 }
 
 /**
- * Lead image plus a six-up thumbnail rail, with a keyboard-navigable lightbox.
- *
- * The rail is `grid-cols-3 md:grid-cols-6` and every yacht ships exactly six
- * images, so the row is always full at both breakpoints. That is the whole
- * reason the image count is fixed: an uneven final row is what made the fleet
- * look unevenly documented.
+ * Lead image plus a responsive thumbnail rail, with a keyboard-navigable
+ * lightbox. Yachts ship 6-20 images depending on available source material;
+ * the rail reflows cleanly at every breakpoint.
  */
 export function Gallery({ images, title, className }: GalleryProps) {
   const heroRef = useRef<HTMLButtonElement>(null);
@@ -111,7 +108,7 @@ export function Gallery({ images, title, className }: GalleryProps) {
           hidden: {},
           visible: { transition: { staggerChildren: STAGGER.tight } },
         }}
-        className="grid grid-cols-3 gap-3 md:grid-cols-6"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       >
         {images.map((img, i) => (
           <motion.li

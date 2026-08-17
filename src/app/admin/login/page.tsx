@@ -75,7 +75,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@yousefyachts.com"
+                placeholder="admin@hurryupslowly.com"
                 className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#E9E9EC] focus:ring-1 focus:ring-[#E9E9EC]"
               />
             </div>

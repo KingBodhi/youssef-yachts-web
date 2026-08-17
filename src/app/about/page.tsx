@@ -15,12 +15,12 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: `About Us | ${BRAND.name}`,
   description:
-    "Hurry Up Slowly is a Miami yacht charter operation built on safety, maintenance discipline and concierge service. Meet the team behind the fleet.",
+    "Hurry Up Slowly Yachts is a Miami yacht charter built on safety, professional crews and concierge service. Meet the team behind the fleet.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: `About Us | ${BRAND.name}`,
     description:
-      "A Miami yacht charter operation built on safety, maintenance discipline and concierge service.",
+      "A Miami yacht charter built on safety, professional crews and concierge service.",
     url: "/about",
     siteName: BRAND.name,
     type: "website",
@@ -36,7 +36,7 @@ const values = [
   },
   {
     icon: Gem,
-    title: "Unmatched Quality",
+    title: "Meticulous Maintenance",
     description:
       "Our fleet is meticulously maintained. Each yacht is inspected and detailed before every charter, which is what keeps a pristine boat a predictable outcome rather than a lucky one.",
   },
@@ -57,6 +57,9 @@ const badges = [
 export default function AboutPage() {
   const fleet = getActiveYachts();
 
+  const largest = Math.max(...fleet.map((y) => y.length));
+  const maxGuests = Math.max(...fleet.map((y) => y.capacity));
+
   const stats: {
     value: number;
     suffix: string;
@@ -64,17 +67,17 @@ export default function AboutPage() {
     separator: boolean;
   }[] = [
     { value: fleet.length, suffix: "", label: "Yachts in the fleet", separator: false },
-    { value: 1000, suffix: "+", label: "Charters completed", separator: true },
-    { value: 5, suffix: "-star", label: "Average guest rating", separator: false },
+    { value: largest, suffix: " ft", label: "Longest yacht", separator: true },
+    { value: maxGuests, suffix: "", label: "Guests on a charter", separator: false },
   ];
 
   return (
     <>
       <PageHero
-        eyebrow="Our Legacy"
-        title="About Hurry Up Slowly"
+        eyebrow="About Us"
+        title="About Hurry Up Slowly Yachts"
         accentFrom={1}
-        lede="One of Miami's most trusted names in luxury yacht charters, built on a foundation of safety, excellence, and days on the water people remember."
+        lede="A Miami yacht charter built on safety, professional crews, and days on the water people remember."
       />
 
       {/* Story */}
@@ -86,23 +89,23 @@ export default function AboutPage() {
               Our Story
             </p>
             <h2 className="mt-4 font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              A Cornerstone of Miami&rsquo;s{" "}
+              Crewed Charters on{" "}
               <br />
-              <span className="text-brand-gradient">Yacht Charter Industry</span>
+              <span className="text-brand-gradient">Miami&rsquo;s Water</span>
             </h2>
             <div className="mt-8 space-y-5 text-base leading-relaxed text-muted">
               <p>
-                {BRAND.name} has been a cornerstone of Miami&rsquo;s yacht charter
-                industry for years, earning the trust of locals and visitors
-                alike through an uncompromising commitment to safety, luxury,
-                and client satisfaction.
+                {BRAND.name} is a Miami yacht charter built on a simple
+                standard: handpicked vessels, professional crews, and days on
+                the water that guests remember. Every charter is planned around
+                your occasion, not a template.
               </p>
               <p>
-                What began as a passion for the open water has grown into one of
-                Miami&rsquo;s most sought-after charter operations. Under
-                Yousef&rsquo;s leadership, every vessel, every route, and every
-                detail is curated with a single focus: a world-class experience
-                that holds up to scrutiny.
+                The fleet spans intimate day boats to a 92-foot flagship, each
+                maintained to charter-ready condition and crewed by a licensed
+                captain. Led by {BRAND.contactName}, the team handles every
+                detail, from route to provisioning, so you can focus on the day
+                itself.
               </p>
               <p>
                 A sunset cruise through Biscayne Bay, a celebration anchored off

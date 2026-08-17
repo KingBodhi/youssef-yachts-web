@@ -69,7 +69,7 @@ const sections = [
   {
     heading: "Contact",
     body: [
-      `Questions about these terms can go to ${BRAND.email}, or by phone on ${BRAND.phone}. Our mailing address is ${BRAND.address}.`,
+      `Questions about these terms can be directed to ${BRAND.contactName} by phone at ${BRAND.phone}.`,
     ],
   },
 ];

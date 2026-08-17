@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const yacht = getYachtBySlug(slug);
 
   if (!yacht) {
-    return { title: "Yacht Not Found | Hurry Up Slowly" };
+    return { title: "Yacht Not Found | Hurry Up Slowly Yachts" };
   }
 
   const title = `${yacht.name} | ${BRAND.name}`;

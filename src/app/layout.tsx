@@ -32,7 +32,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Hurry Up Slowly | Miami Yacht Charter",
+    default: "Hurry Up Slowly Yachts | Miami Yacht Charter",
     template: `%s`,
   },
   description: BRAND.description,
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Hurry Up Slowly | Miami Yacht Charter",
+    title: "Hurry Up Slowly Yachts | Miami Yacht Charter",
     description: BRAND.description,
     siteName: BRAND.name,
     url: "/",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hurry Up Slowly | Miami Yacht Charter",
+    title: "Hurry Up Slowly Yachts | Miami Yacht Charter",
     description: BRAND.description,
   },
   robots: {
