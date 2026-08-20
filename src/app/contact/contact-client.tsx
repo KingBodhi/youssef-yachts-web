@@ -7,6 +7,7 @@ import { z } from "zod/v4";
 import { motion } from "framer-motion";
 import {
   Phone,
+  Mail,
   MapPin,
   Clock,
   MessageSquare,
@@ -55,6 +56,12 @@ const contactInfo = [
     label: "Text",
     value: BRAND.phone,
     href: `sms:${BRAND.phoneHref}`,
+  },
+  {
+    icon: Mail,
+    label: "Email",
+    value: BRAND.email,
+    href: `mailto:${BRAND.email}`,
   },
   {
     icon: MapPin,

@@ -12,3 +12,13 @@ next-env.d.ts
 
 # Full-resolution photo originals (kept locally, not deployed)
 /photo-sources
+
+# macOS
+.DS_Store
+
+# Local/trash files
+_trash/
+
+# Local development
+.next/
+node_modules/

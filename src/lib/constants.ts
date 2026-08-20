@@ -3,11 +3,17 @@ export const BRAND = {
   shortName: "Hurry Up Slowly",
   tagline: "Miami's Elite Yacht Charter Experience",
   description:
-    "Premium luxury yacht charters in Miami. Handpicked vessels, professional crew, and world-class service on Biscayne Bay, Star Island, and beyond.",
+    "Premier luxury yacht charters in Miami. Handpicked vessels, professional crew, world-class service on Biscayne Bay, Star Island, and beyond.",
   contactName: "Youssef",
-  phone: "+1 (786) 547-2639",
-  phoneHref: "+17865472639",
+  phone: "(305) 555-0199",
+  phoneHref: "+13055550199",
+  email: "charter@hurryupslowly.com",
+  address: "300 Alton Road, Miami Beach, FL 33139",
   location: "Miami Beach, FL",
+  instagram: "https://instagram.com/hurryupslowly",
+  facebook: "https://facebook.com/hurryupslowly",
+  tiktok: "https://tiktok.com/@hurryupslowly",
+  youtube: "https://youtube.com/@hurryupslowly",
 } as const;
 
 export const NAV_LINKS = [
