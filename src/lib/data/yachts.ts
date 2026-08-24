@@ -6,10 +6,14 @@ import { Yacht } from "@/lib/types";
  * so a future edit cannot quietly reintroduce the drift this fixes: before
  * this pass, galleries ranged from 6 to 12 images and amenity lists from 10
  * to 12, which made the fleet look unevenly documented.
+ *
+ * Images are exactly 11 per yacht: one cover (index 0), shown as the gallery
+ * lead and the fleet-card thumbnail, plus a 2 x 5 grid of ten supporting
+ * shots. Every cover is an exterior three-quarter shot on the water so the
+ * fleet compares cleanly side by side.
  */
 export const FLEET_SHAPE = {
-  minImages: 6,
-  maxImages: 20,
+  images: 11,
   amenities: 10,
   includes: 6,
   features: 4,
@@ -32,7 +36,6 @@ export const yachts: Yacht[] = [
     images: [
       "/yachts/leopard-92/01.jpg",
       "/yachts/leopard-92/02.jpg",
-      "/yachts/leopard-92/03.jpg",
       "/yachts/leopard-92/04.jpg",
       "/yachts/leopard-92/05.jpg",
       "/yachts/leopard-92/06.jpg",
@@ -43,7 +46,7 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-92/11.jpg",
       "/yachts/leopard-92/12.jpg",
     ],
-    thumbnail: "/yachts/leopard-92/thumb.jpg",
+    thumbnail: "/yachts/leopard-92/01.jpg",
     amenities: [
       "Onboard Jacuzzi",
       "Private club area with DJ booth",
@@ -111,19 +114,18 @@ export const yachts: Yacht[] = [
     year: 2020,
     images: [
       "/yachts/leopard-86/01.jpg",
-      "/yachts/leopard-86/02.jpg",
       "/yachts/leopard-86/03.jpg",
+      "/yachts/leopard-86/02.jpg",
       "/yachts/leopard-86/04.jpg",
+      "/yachts/leopard-86/08.jpg",
+      "/yachts/leopard-86/09.jpg",
+      "/yachts/leopard-86/11.jpg",
       "/yachts/leopard-86/05.jpg",
       "/yachts/leopard-86/06.jpg",
       "/yachts/leopard-86/07.jpg",
-      "/yachts/leopard-86/08.jpg",
-      "/yachts/leopard-86/09.jpg",
-      "/yachts/leopard-86/10.jpg",
-      "/yachts/leopard-86/11.jpg",
       "/yachts/leopard-86/12.jpg",
     ],
-    thumbnail: "/yachts/leopard-86/thumb.jpg",
+    thumbnail: "/yachts/leopard-86/01.jpg",
     amenities: [
       "Expansive flybridge with wet bar",
       "Bow sunpad lounge",
@@ -191,10 +193,9 @@ export const yachts: Yacht[] = [
     year: 2016,
     images: [
       "/yachts/leopard-82/01.jpg",
+      "/yachts/leopard-82/05.jpg",
       "/yachts/leopard-82/02.jpg",
       "/yachts/leopard-82/03.jpg",
-      "/yachts/leopard-82/04.jpg",
-      "/yachts/leopard-82/05.jpg",
       "/yachts/leopard-82/06.jpg",
       "/yachts/leopard-82/07.jpg",
       "/yachts/leopard-82/08.jpg",
@@ -203,7 +204,7 @@ export const yachts: Yacht[] = [
       "/yachts/leopard-82/11.jpg",
       "/yachts/leopard-82/12.jpg",
     ],
-    thumbnail: "/yachts/leopard-82/thumb.jpg",
+    thumbnail: "/yachts/leopard-82/01.jpg",
     amenities: [
       "Expansive teak flybridge",
       "Flybridge wet bar",
@@ -270,19 +271,18 @@ export const yachts: Yacht[] = [
     year: 2022,
     images: [
       "/yachts/princess-v65/01.jpg",
-      "/yachts/princess-v65/02.jpg",
       "/yachts/princess-v65/03.jpg",
+      "/yachts/princess-v65/02.jpg",
       "/yachts/princess-v65/04.jpg",
-      "/yachts/princess-v65/05.jpg",
-      "/yachts/princess-v65/06.jpg",
       "/yachts/princess-v65/07.jpg",
+      "/yachts/princess-v65/06.jpg",
       "/yachts/princess-v65/08.jpg",
       "/yachts/princess-v65/09.jpg",
       "/yachts/princess-v65/10.jpg",
       "/yachts/princess-v65/11.jpg",
       "/yachts/princess-v65/12.jpg",
     ],
-    thumbnail: "/yachts/princess-v65/thumb.jpg",
+    thumbnail: "/yachts/princess-v65/01.jpg",
     amenities: [
       "Retractable hardtop",
       "Cockpit wet bar & grill",
@@ -348,20 +348,19 @@ export const yachts: Yacht[] = [
     builder: "Cruisers Yachts",
     year: 2023,
     images: [
-      "/yachts/cantius-45/01.jpg",
-      "/yachts/cantius-45/02.jpg",
-      "/yachts/cantius-45/03.jpg",
       "/yachts/cantius-45/04.jpg",
+      "/yachts/cantius-45/01.jpg",
       "/yachts/cantius-45/05.jpg",
+      "/yachts/cantius-45/02.jpg",
+      "/yachts/cantius-45/10.jpg",
       "/yachts/cantius-45/06.jpg",
       "/yachts/cantius-45/07.jpg",
       "/yachts/cantius-45/08.jpg",
       "/yachts/cantius-45/09.jpg",
-      "/yachts/cantius-45/10.jpg",
       "/yachts/cantius-45/11.jpg",
       "/yachts/cantius-45/12.jpg",
     ],
-    thumbnail: "/yachts/cantius-45/thumb.jpg",
+    thumbnail: "/yachts/cantius-45/04.jpg",
     amenities: [
       "Retractable sunroof",
       "Fold-down bulwark windows",
@@ -435,12 +434,9 @@ function assertFleetUniformity(list: Yacht[]): void {
   const problems: string[] = [];
 
   for (const y of list) {
-    if (
-      y.images.length < FLEET_SHAPE.minImages ||
-      y.images.length > FLEET_SHAPE.maxImages
-    ) {
+    if (y.images.length !== FLEET_SHAPE.images) {
       problems.push(
-        `${y.name}: ${y.images.length} images, expected ${FLEET_SHAPE.minImages}-${FLEET_SHAPE.maxImages}`
+        `${y.name}: ${y.images.length} images, expected exactly ${FLEET_SHAPE.images} (1 cover + a 2 x 5 grid)`
       );
     }
     if (y.amenities.length !== FLEET_SHAPE.amenities) {
@@ -456,8 +452,10 @@ function assertFleetUniformity(list: Yacht[]): void {
     if (bad.length > 0) {
       problems.push(`${y.name}: gallery images must be numbered 01..06.jpg (${bad.join(", ")})`);
     }
-    if (!y.thumbnail.endsWith("/thumb.jpg")) {
-      problems.push(`${y.name}: thumbnail must be thumb.jpg (${y.thumbnail})`);
+    if (!/\/(?:\d{2}|thumb)\.jpg$/.test(y.thumbnail)) {
+      problems.push(
+        `${y.name}: thumbnail must be a numbered cover image or thumb.jpg (${y.thumbnail})`
+      );
     }
   }
 

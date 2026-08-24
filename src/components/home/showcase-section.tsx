@@ -24,8 +24,8 @@ export function ShowcaseSection() {
   return (
     <section className="relative">
       <ParallaxImage
-        src="/yachts/leopard-92/05.jpg"
-        alt="A Hurry Up Slowly yacht at anchor off Miami at golden hour"
+        src="/yachts/leopard-82/11.jpg"
+        alt="Golden hour on the water aboard a Hurry Up Slowly yacht"
         sizes="100vw"
         scrim={0.6}
         className="min-h-[560px] py-24 sm:min-h-[640px] sm:py-32"

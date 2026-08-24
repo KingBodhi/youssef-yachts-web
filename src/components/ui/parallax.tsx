@@ -57,6 +57,14 @@ interface ParallaxImageProps {
   sizes?: string;
   priority?: boolean;
   strength?: number;
+  /**
+   * Overall parallax movement + zoom, 0 to 1. 1 is the full cinematic drift
+   * used on wide atmospheric bands. Lower it for a band whose subject fills the
+   * frame (a whole boat), so object-cover does not have to zoom past the edges
+   * and clip the top. The inset, travel and scale all scale together, so
+   * coverage during the drift stays gap-free at any value.
+   */
+  intensity?: number;
   /** Overlay children rendered above the image and scrim. */
   children?: ReactNode;
   /** Darkening scrim strength, 0 to 1. */
@@ -76,6 +84,7 @@ export function ParallaxImage({
   sizes = "100vw",
   priority = false,
   strength = 14,
+  intensity = 1,
   scrim = 0.55,
   children,
 }: ParallaxImageProps) {
@@ -86,22 +95,28 @@ export function ParallaxImage({
     offset: ["start end", "end start"],
   });
 
+  // Everything scales by `intensity` in lockstep so the moving image always
+  // covers the frame: a smaller inset needs proportionally less travel and zoom.
+  const travel = strength * intensity;
+  const insetPct = -12 * intensity;
+  const scalePeak = 1 + 0.16 * intensity;
+  const scaleMid = 1 + 0.06 * intensity;
   const y: MotionValue<string> = useTransform(
     scrollYProgress,
     [0, 1],
-    reduce ? ["0%", "0%"] : [`${-strength}%`, `${strength}%`]
+    reduce ? ["0%", "0%"] : [`${-travel}%`, `${travel}%`]
   );
   const scale = useTransform(
     scrollYProgress,
     [0, 0.5, 1],
-    reduce ? [1, 1, 1] : [1.16, 1.06, 1.16]
+    reduce ? [1, 1, 1] : [scalePeak, scaleMid, scalePeak]
   );
 
   return (
     <div ref={ref} className={cn("relative overflow-hidden", className)}>
       <motion.div
-        style={{ y, scale }}
-        className="absolute inset-[-12%] will-change-transform"
+        style={{ y, scale, inset: `${insetPct}%` }}
+        className="absolute will-change-transform"
       >
         <Image
           src={src}

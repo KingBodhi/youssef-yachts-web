@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Ruler, Users } from "lucide-react";
+import { ArrowRight, BedDouble, Ruler, Users } from "lucide-react";
 import type { Yacht } from "@/lib/types";
 import { cn, formatCurrency } from "@/lib/utils";
 import { spring } from "@/lib/motion";
@@ -13,6 +13,19 @@ interface YachtCardProps {
   /** Index within the grid, used for the image priority hint. */
   index?: number;
   className?: string;
+  /**
+   * "grid" is the vertical card used in a multi-column grid. "row" is a
+   * full-width horizontal card — image left, details right — used when the
+   * fleet is presented as a single stacked column, so an odd count never
+   * leaves a dangling empty cell.
+   */
+  layout?: "grid" | "row";
+}
+
+/** The opening sentence of the description, used as the row layout's blurb. */
+function firstSentence(text: string): string {
+  const match = text.match(/^.*?[.!?](?=\s|$)/);
+  return (match ? match[0] : text).trim();
 }
 
 /**
@@ -23,8 +36,82 @@ interface YachtCardProps {
  * The homepage grid and the fleet page used to ship two near-identical cards that disagreed on the price badge, the spec
  * labels, and the hover treatment. One component removes that class of drift.
  */
-export function YachtCard({ yacht, index = 0, className }: YachtCardProps) {
+export function YachtCard({ yacht, index = 0, className, layout = "grid" }: YachtCardProps) {
   const reduce = useReducedMotion();
+
+  if (layout === "row") {
+    return (
+      <motion.article
+        whileHover={reduce ? undefined : { y: -4 }}
+        transition={spring}
+        className={cn("h-full", className)}
+      >
+        <Link
+          href={`/fleet/${yacht.slug}`}
+          className={cn(
+            "sheen-parent group flex h-full flex-col overflow-hidden rounded-2xl sm:flex-row",
+            "border border-border bg-surface",
+            "transition-colors duration-500 hover:border-primary/40",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          )}
+        >
+          <div className="relative aspect-[3/2] shrink-0 overflow-hidden bg-navy sm:aspect-auto sm:min-h-[300px] sm:w-[42%]">
+            <Image
+              src={yacht.thumbnail}
+              alt={`${yacht.name}, ${yacht.tagline}`}
+              fill
+              priority={index < 3}
+              className="object-cover object-[50%_45%] transition-transform duration-[1200ms] ease-out group-hover:scale-[1.05]"
+              sizes="(max-width: 640px) 100vw, 42vw"
+            />
+
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/10 to-transparent sm:bg-gradient-to-r sm:from-navy/45 sm:via-transparent" />
+
+            <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-background/70 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-primary-light backdrop-blur-md">
+              {yacht.builder}
+            </span>
+          </div>
+
+          <div className="flex flex-1 flex-col justify-center gap-4 p-6 sm:p-8">
+            <div>
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="font-heading text-2xl font-bold text-foreground transition-colors duration-300 group-hover:text-primary-light">
+                  {yacht.name}
+                </h3>
+                <span className="mt-1 shrink-0 rounded-full border border-border bg-background/60 px-3 py-1 text-sm font-semibold text-primary-light">
+                  From {formatCurrency(yacht.pricing.halfDay)}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted">{yacht.tagline}</p>
+            </div>
+
+            <p className="max-w-2xl text-sm leading-relaxed text-muted/90">
+              {firstSentence(yacht.description)}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-4 text-sm text-muted">
+              <span className="flex items-center gap-2">
+                <Ruler className="h-4 w-4 text-primary/60" />
+                {yacht.length} ft
+              </span>
+              <span className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary/60" />
+                Up to {yacht.capacity} guests
+              </span>
+              <span className="flex items-center gap-2">
+                <BedDouble className="h-4 w-4 text-primary/60" />
+                {yacht.cabins} {yacht.cabins === 1 ? "cabin" : "cabins"}
+              </span>
+              <span className="ml-auto flex items-center gap-2 font-semibold text-primary-light">
+                View Details
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
+            </div>
+          </div>
+        </Link>
+      </motion.article>
+    );
+  }
 
   return (
     <motion.article

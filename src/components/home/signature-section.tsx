@@ -11,21 +11,21 @@ const experiences = [
   {
     icon: Sunset,
     title: "Sunset Cruises",
-    image: "/yachts/leopard-92/03.jpg",
+    image: "/yachts/princess-v65/04.jpg",
     description:
       "Head out as the skyline turns gold. A relaxed cruise past Star Island and along the bay, timed to the light.",
   },
   {
     icon: Anchor,
     title: "Sandbar & Island Days",
-    image: "/yachts/cantius-45/01.jpg",
+    image: "/yachts/cantius-45/04.jpg",
     description:
       "Anchor at the sandbar with floats, water toys, and open water. The classic Miami weekend on the bay.",
   },
   {
     icon: PartyPopper,
     title: "Celebrations & Corporate",
-    image: "/yachts/leopard-92/04.jpg",
+    image: "/yachts/leopard-86/04.jpg",
     description:
       "Birthdays, milestones, and client entertaining aboard a private yacht built for a group and a great night.",
   },

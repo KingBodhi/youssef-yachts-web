@@ -22,9 +22,10 @@ interface GalleryProps {
 }
 
 /**
- * Lead image plus a responsive thumbnail rail, with a keyboard-navigable
- * lightbox. Yachts ship 6-20 images depending on available source material;
- * the rail reflows cleanly at every breakpoint.
+ * Cover image plus a supporting grid, with a keyboard-navigable lightbox.
+ * Every yacht ships exactly 11 images: one cover (index 0), shown large, and
+ * ten supporting shots laid out as a 2 x 5 grid on desktop. The lightbox still
+ * cycles all 11. The grid reflows to fewer columns on smaller screens.
  */
 export function Gallery({ images, title, className }: GalleryProps) {
   const heroRef = useRef<HTMLButtonElement>(null);
@@ -77,14 +78,14 @@ export function Gallery({ images, title, className }: GalleryProps) {
         transition={{ duration: DURATION.slow, ease: EASE }}
         onClick={() => setIndex(0)}
         aria-label={`Open the gallery for ${title}`}
-        className="group relative mb-4 block aspect-[21/9] w-full cursor-zoom-in overflow-hidden rounded-2xl border border-border bg-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="group relative mb-4 block aspect-[3/2] w-full cursor-zoom-in overflow-hidden rounded-2xl border border-border bg-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:aspect-[16/10] lg:aspect-[16/9]"
       >
         <motion.div style={{ scale, y }} className="absolute inset-0 will-change-transform">
           <Image
             src={images[0]}
             alt={`${title}, image 1 of ${images.length}`}
             fill
-            className="object-cover"
+            className="object-cover object-[50%_38%]"
             sizes="(max-width: 1280px) 100vw, 1280px"
             priority
           />
@@ -101,7 +102,7 @@ export function Gallery({ images, title, className }: GalleryProps) {
         </span>
       </motion.button>
 
-      {/* Thumbnail rail. Always exactly one full row. */}
+      {/* Supporting grid: the ten non-cover images as a 2 x 5 grid on desktop. */}
       <motion.ul
         {...railEntrance}
         variants={{
@@ -110,42 +111,45 @@ export function Gallery({ images, title, className }: GalleryProps) {
         }}
         className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       >
-        {images.map((img, i) => (
-          <motion.li
-            key={img}
-            variants={{
-              hidden: { opacity: 0, y: 16 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { duration: DURATION.fast, ease: EASE },
-              },
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={`Open image ${i + 1} of ${images.length}`}
-              className={cn(
-                "group relative block aspect-[3/2] w-full cursor-zoom-in overflow-hidden rounded-lg",
-                "border border-border bg-navy transition-colors duration-300 hover:border-primary/50",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              )}
+        {images.slice(1).map((img, j) => {
+          const i = j + 1;
+          return (
+            <motion.li
+              key={img}
+              variants={{
+                hidden: { opacity: 0, y: 16 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: DURATION.fast, ease: EASE },
+                },
+              }}
             >
-              <Image
-                src={img}
-                alt={`${title}, image ${i + 1} of ${images.length}`}
-                fill
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                sizes="(max-width: 768px) 33vw, 16vw"
-              />
-              <span
-                aria-hidden="true"
-                className="absolute inset-0 bg-primary/0 transition-colors duration-300 group-hover:bg-primary/10"
-              />
-            </button>
-          </motion.li>
-        ))}
+              <button
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={`Open image ${i + 1} of ${images.length}`}
+                className={cn(
+                  "group relative block aspect-[3/2] w-full cursor-zoom-in overflow-hidden rounded-lg",
+                  "border border-border bg-navy transition-colors duration-300 hover:border-primary/50",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                )}
+              >
+                <Image
+                  src={img}
+                  alt={`${title}, image ${i + 1} of ${images.length}`}
+                  fill
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  sizes="(max-width: 768px) 33vw, 16vw"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-primary/0 transition-colors duration-300 group-hover:bg-primary/10"
+                />
+              </button>
+            </motion.li>
+          );
+        })}
       </motion.ul>
 
       {/* Lightbox */}

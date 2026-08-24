@@ -113,7 +113,7 @@ export function FleetClient() {
 
         <motion.div
           layout
-          className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+          className="mx-auto flex max-w-5xl flex-col gap-6"
         >
           <AnimatePresence mode="popLayout">
             {filtered.map((yacht, i) => (
@@ -132,7 +132,7 @@ export function FleetClient() {
                 }}
                 exit={{ opacity: 0, y: -12, transition: { duration: 0.25 } }}
               >
-                <YachtCard yacht={yacht} index={i} />
+                <YachtCard yacht={yacht} index={i} layout="row" />
               </motion.div>
             ))}
           </AnimatePresence>

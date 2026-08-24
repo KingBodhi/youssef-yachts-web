@@ -151,6 +151,8 @@ export default function AboutPage() {
         src="/yachts/leopard-82/01.jpg"
         alt="A charter yacht anchored off the Miami shoreline"
         className="h-[42vh] min-h-[320px] sm:h-[52vh]"
+        imageClassName="object-[50%_42%]"
+        intensity={0.3}
         scrim={0.5}
       />
 

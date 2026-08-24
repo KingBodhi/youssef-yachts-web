@@ -42,11 +42,11 @@ export function FleetPreview() {
           visible: { transition: { staggerChildren: STAGGER.base } },
         }}
         {...gridEntrance}
-        className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+        className="mx-auto mt-16 flex max-w-5xl flex-col gap-6"
       >
         {activeYachts.map((yacht, i) => (
           <StaggerItem key={yacht.id} className="h-full">
-            <YachtCard yacht={yacht} index={i} />
+            <YachtCard yacht={yacht} index={i} layout="row" />
           </StaggerItem>
         ))}
       </motion.div>
