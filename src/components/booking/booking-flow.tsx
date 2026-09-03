@@ -33,6 +33,12 @@ import { Button } from "@/components/ui/button";
 import { PriceSummary } from "@/components/booking/price-summary";
 import { CHARTER_TYPES, ADD_ONS } from "@/lib/constants";
 import { createBooking } from "@/lib/bookings";
+import {
+  AvailabilityCalendar,
+  useAvailability,
+} from "@/components/booking/availability-calendar";
+import { TIME_SLOTS, slotById } from "@/lib/slots";
+import { startOfMonth, startOfToday } from "date-fns";
 import type { Yacht } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -51,13 +57,6 @@ interface BookingFormData {
   specialRequests: string;
   addOns: string[];
 }
-
-const TIME_SLOTS = [
-  { id: "morning", label: "Morning", time: "8:00 AM - 12:00 PM" },
-  { id: "afternoon", label: "Afternoon", time: "1:00 PM - 5:00 PM" },
-  { id: "sunset", label: "Sunset", time: "4:00 PM - 8:00 PM" },
-  { id: "full-day", label: "Full Day", time: "9:00 AM - 5:00 PM" },
-] as const;
 
 const ADDON_ICONS: Record<string, React.ElementType> = {
   "chef-hat": ChefHat,
@@ -105,18 +104,8 @@ function getBasePrice(yacht: Yacht, charterType: string): number {
 }
 
 function getTimeSlotTimes(slotId: string): { start: string; end: string } {
-  switch (slotId) {
-    case "morning":
-      return { start: "08:00", end: "12:00" };
-    case "afternoon":
-      return { start: "13:00", end: "17:00" };
-    case "sunset":
-      return { start: "16:00", end: "20:00" };
-    case "full-day":
-      return { start: "09:00", end: "17:00" };
-    default:
-      return { start: "09:00", end: "17:00" };
-  }
+  const slot = slotById(slotId);
+  return slot ? { start: slot.start, end: slot.end } : { start: "09:00", end: "17:00" };
 }
 
 // ---------------------------------------------------------------------------
@@ -130,6 +119,9 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [signingLink, setSigningLink] = useState("");
+  // Bumped when a slot is taken out from under the guest, forcing the calendar
+  // to refetch availability.
+  const [availRefresh, setAvailRefresh] = useState(0);
 
   const {
     register,
@@ -220,8 +212,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
     const serviceFee = Math.round(subtotal * 0.1);
     const tax = Math.round(subtotal * 0.07);
     const total = subtotal + serviceFee + tax;
-    const deposit = Math.round(total * 0.5);
-    const times = getTimeSlotTimes(data.timeSlot);
+      const times = getTimeSlotTimes(data.timeSlot);
 
     setSubmitError("");
     setSubmitting(true);
@@ -249,8 +240,8 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
           serviceFee,
           tax,
           total,
-          deposit,
-          balance: total - deposit,
+          deposit: total,
+          balance: 0,
         },
         payment: {
           method: "card",
@@ -262,12 +253,27 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
         notes: data.specialRequests || undefined,
       });
 
+      if (result.checkoutUrl) {
+        // Hand off to Stripe Checkout for payment.
+        window.location.href = result.checkoutUrl;
+        return;
+      }
       setSigningLink(result.signingLink);
       setIsSubmitted(true);
-    } catch {
-      setSubmitError(
-        "We couldn't complete your booking. Please try again or contact us."
-      );
+    } catch (err) {
+      const msg = String(err);
+      if (msg.includes("409") || msg.includes("SLOT_TAKEN")) {
+        setSubmitError(
+          "That date and time was just reserved by someone else. Please pick another slot."
+        );
+        setAvailRefresh((n) => n + 1);
+        setDirection(-1);
+        setStep(1);
+      } else {
+        setSubmitError(
+          "We couldn't complete your booking. Please try again or contact us."
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -379,6 +385,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
                   availableTimeSlots={availableTimeSlots}
                   onCharterTypeChange={handleCharterTypeChange}
                   setValue={setValue}
+                  availRefresh={availRefresh}
                 />
               )}
               {step === 2 && (
@@ -432,7 +439,7 @@ export function BookingFlow({ yacht }: { yacht: Yacht }) {
               className="gap-2"
             >
               <CreditCard className="h-4 w-4" />{" "}
-              {submitting ? "Sending..." : "Request This Charter"}
+              {submitting ? "Starting checkout..." : "Continue to Payment"}
             </Button>
           )}
         </div>
@@ -474,6 +481,7 @@ function StepDateTime({
   availableTimeSlots,
   onCharterTypeChange,
   setValue,
+  availRefresh,
 }: {
   register: ReturnType<typeof useForm<BookingFormData>>["register"];
   control: ReturnType<typeof useForm<BookingFormData>>["control"];
@@ -483,7 +491,45 @@ function StepDateTime({
   availableTimeSlots: readonly { id: string; label: string; time: string }[];
   onCharterTypeChange: (type: "half-day" | "full-day" | "multi-day") => void;
   setValue: ReturnType<typeof useForm<BookingFormData>>["setValue"];
+  availRefresh: number;
 }) {
+  const [calMonth, setCalMonth] = useState<Date>(() =>
+    startOfMonth(startOfToday())
+  );
+  const { days, loading, reload } = useAvailability(yacht.id, calMonth);
+
+  useEffect(() => {
+    if (availRefresh > 0) void reload();
+  }, [availRefresh, reload]);
+
+  const dayInfo = watchAll.date ? days[watchAll.date] : undefined;
+
+  const isSlotTaken = useCallback(
+    (slotId: string): boolean => {
+      if (!dayInfo) return false;
+      if (dayInfo.dayBlocked) return true;
+      if (slotId === "full-day") return dayInfo.anyTaken;
+      return dayInfo.slotsTaken.includes(slotId);
+    },
+    [dayInfo]
+  );
+
+  const handleSelectDate = useCallback(
+    (date: string) => {
+      setValue("date", date, { shouldValidate: true });
+      const info = days[date];
+      if (info && watchAll.charterType === "half-day") {
+        if (info.slotsTaken.includes(watchAll.timeSlot) || info.dayBlocked) {
+          const free = availableTimeSlots.find(
+            (s) => !info.slotsTaken.includes(s.id)
+          );
+          if (free) setValue("timeSlot", free.id);
+        }
+      }
+    },
+    [days, setValue, watchAll.charterType, watchAll.timeSlot, availableTimeSlots]
+  );
+
   return (
     <div className="space-y-10">
       <div>
@@ -491,30 +537,9 @@ function StepDateTime({
           Select Date &amp; Time
         </h2>
         <p className="mt-2 text-muted">
-          Choose your preferred charter date, duration, and departure time.
+          Choose your charter type, then pick an available date and departure
+          time.
         </p>
-      </div>
-
-      {/* Date picker */}
-      <div>
-        <label className="mb-2 block text-sm font-medium tracking-wide text-foreground/80">
-          <Calendar className="mb-0.5 mr-2 inline-block h-4 w-4 text-primary" />
-          Charter Date
-        </label>
-        <input
-          type="date"
-          {...register("date", { required: "Please select a date" })}
-          min={new Date().toISOString().split("T")[0]}
-          className={cn(
-            "w-full max-w-sm rounded-md border bg-navy-light px-4 py-3 text-foreground outline-none transition-colors",
-            "focus:border-primary focus:ring-1 focus:ring-primary/40",
-            "[color-scheme:dark]",
-            errors.date ? "border-red-500" : "border-border"
-          )}
-        />
-        {errors.date && (
-          <p className="mt-1.5 text-sm text-red-400">{errors.date.message}</p>
-        )}
       </div>
 
       {/* Charter type */}
@@ -532,7 +557,6 @@ function StepDateTime({
                   ? yacht.pricing.fullDay
                   : (yacht.pricing.multiDayPerDay ?? yacht.pricing.fullDay);
             const isActive = watchAll.charterType === type.id;
-
             return (
               <button
                 type="button"
@@ -585,6 +609,30 @@ function StepDateTime({
         </div>
       </div>
 
+      {/* Date -- live availability calendar */}
+      <div>
+        <label className="mb-3 block text-sm font-medium tracking-wide text-foreground/80">
+          <Calendar className="mb-0.5 mr-2 inline-block h-4 w-4 text-primary" />
+          Charter Date
+        </label>
+        <AvailabilityCalendar
+          month={calMonth}
+          onMonthChange={setCalMonth}
+          days={days}
+          loading={loading}
+          charterType={watchAll.charterType}
+          selectedDate={watchAll.date}
+          onSelect={handleSelectDate}
+        />
+        <input
+          type="hidden"
+          {...register("date", { required: "Please select a date" })}
+        />
+        {errors.date && (
+          <p className="mt-2 text-sm text-red-400">{errors.date.message}</p>
+        )}
+      </div>
+
       {/* Time slots */}
       <div>
         <label className="mb-3 block text-sm font-medium tracking-wide text-foreground/80">
@@ -594,35 +642,47 @@ function StepDateTime({
         <div className="grid gap-3 sm:grid-cols-3">
           {availableTimeSlots.map((slot) => {
             const isActive = watchAll.timeSlot === slot.id;
+            const taken = isSlotTaken(slot.id);
             return (
               <button
                 type="button"
                 key={slot.id}
-                onClick={() => setValue("timeSlot", slot.id)}
+                disabled={taken}
+                onClick={() => !taken && setValue("timeSlot", slot.id)}
                 className={cn(
                   "rounded-lg border px-5 py-4 text-left transition-all duration-200",
-                  isActive
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-navy-light/50 hover:border-primary/30 hover:bg-navy-light"
+                  taken
+                    ? "cursor-not-allowed border-white/5 bg-navy-light/30 opacity-40"
+                    : isActive
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-navy-light/50 hover:border-primary/30 hover:bg-navy-light"
                 )}
               >
                 <p
                   className={cn(
                     "font-semibold",
-                    isActive ? "text-primary-light" : "text-foreground"
+                    isActive && !taken ? "text-primary-light" : "text-foreground"
                   )}
                 >
                   {slot.label}
                 </p>
-                <p className="mt-0.5 text-xs text-muted">{slot.time}</p>
+                <p className="mt-0.5 text-xs text-muted">
+                  {taken ? "Unavailable" : slot.time}
+                </p>
               </button>
             );
           })}
         </div>
+        {watchAll.date && dayInfo?.dayBlocked && (
+          <p className="mt-3 text-sm text-amber-400">
+            This date is fully booked. Please choose another.
+          </p>
+        )}
       </div>
     </div>
   );
 }
+
 
 // ===========================================================================
 // Step 2 -- Guest Details
@@ -859,7 +919,6 @@ function StepReview({
   const serviceFee = Math.round(subtotal * 0.1);
   const tax = Math.round(subtotal * 0.07);
   const total = subtotal + serviceFee + tax;
-  const deposit = Math.round(total * 0.5);
 
   const charterLabel =
     watchAll.charterType === "half-day"
@@ -884,11 +943,11 @@ function StepReview({
     <div className="space-y-10">
       <div>
         <h2 className="font-heading text-3xl font-semibold text-foreground">
-          Review &amp; Request
+          Review &amp; Pay
         </h2>
         <p className="mt-2 text-muted">
-          Review your selections below. No payment is taken online. A 50%
-          deposit confirms your reservation once we verify availability.
+          Review your selections below, then pay securely online to confirm
+          your reservation instantly.
         </p>
       </div>
 
@@ -979,10 +1038,10 @@ function StepReview({
             </div>
             <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 p-3 text-center">
               <p className="text-sm font-semibold text-primary">
-                50% Deposit to Confirm: {formatCurrency(deposit)}
+                Total Due Today: {formatCurrency(total)}
               </p>
               <p className="mt-0.5 text-xs text-muted">
-                Balance {formatCurrency(total - deposit)} due on the day of your charter
+                Paid securely online to confirm your reservation
               </p>
             </div>
           </div>
@@ -1045,7 +1104,7 @@ function SuccessState({
         <span className="text-primary-light">{yacht.name}</span> has been received.
         We&apos;ll contact you at{" "}
         <span className="text-foreground">{data.email}</span> to confirm
-        availability and arrange your deposit.
+        availability and payment.
       </p>
 
       {/* Booker waiver — required before boarding */}

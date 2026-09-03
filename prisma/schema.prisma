@@ -95,6 +95,15 @@ model Booking {
   paidAmount            Int           @default(0)
   remainingAmount       Int           @default(0)
 
+  // Concrete occupied instant range for the exclusion constraint (intervals.ts).
+  // A DB-level EXCLUDE constraint on (yachtId, tsrange(startsAt,endsAt)) makes
+  // two overlapping non-cancelled bookings for one yacht physically impossible.
+  startsAt DateTime
+  endsAt   DateTime
+
+  // 15-minute reservation hold held during Stripe checkout; nulled once paid.
+  holdExpiresAt DateTime?
+
   status BookingStatus @default(pending)
   notes  String?
 
@@ -109,6 +118,7 @@ model Booking {
   @@index([yachtId])
   @@index([scheduleDate])
   @@index([status])
+  @@index([yachtId, startsAt])
 }
 
 model Waiver {

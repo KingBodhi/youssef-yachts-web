@@ -42,7 +42,6 @@ export function PriceSummary({
   const serviceFee = Math.round(subtotal * 0.1);
   const tax = Math.round(subtotal * 0.07);
   const total = subtotal + serviceFee + tax;
-  const deposit = Math.round(total * 0.5);
 
   const formattedDate = date
     ? new Date(date + "T12:00:00").toLocaleDateString("en-US", {
@@ -155,16 +154,16 @@ export function PriceSummary({
         </div>
       </div>
 
-      {/* Deposit Box */}
+      {/* Payment box */}
       <div className="mx-5 mb-5 rounded-md border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-3">
           <CreditCard className="h-5 w-5 shrink-0 text-primary" />
           <div>
             <p className="text-sm font-semibold text-primary">
-              50% Deposit: {formatCurrency(deposit)}
+              Total Due Today: {formatCurrency(total)}
             </p>
             <p className="mt-0.5 text-xs text-muted">
-              Deposit confirms your date. Balance due on the day of your charter.
+              Paid securely online. Your date is confirmed on payment.
             </p>
           </div>
         </div>

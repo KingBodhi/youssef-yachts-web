@@ -44,6 +44,9 @@ export async function getBookingsByStatus(
 export interface CreateBookingResult {
   booking: Booking;
   signingLink: string;
+  // Present when Stripe is configured: the URL to redirect the guest to for
+  // payment. Null in request-only mode (no Stripe keys yet).
+  checkoutUrl: string | null;
 }
 
 export async function createBooking(
